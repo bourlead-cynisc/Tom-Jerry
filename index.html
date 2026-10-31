@@ -18,12 +18,13 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:n
 .overlay{position:absolute;z-index:5;inset:0;display:grid;place-items:center;padding:22px;background:linear-gradient(120deg,#101522e8,#15192bdc 55%,#111726e8);overflow:auto}.dialog{width:min(720px,100%);max-height:100%;overflow:auto;padding:clamp(18px,4vw,34px);border:1px solid #ffffff2c;border-radius:22px;background:linear-gradient(155deg,#28324b,#20263a 64%,#2a2c43);box-shadow:0 30px 90px #0008}
 .kicker{color:var(--gold);font-size:11px;font-weight:850;letter-spacing:.15em;text-transform:uppercase}.dialog h1{font-size:clamp(32px,6vw,58px);line-height:.98;letter-spacing:-.07em;margin:10px 0 12px}.dialog h1 span{color:var(--gold)}.intro{margin:0;color:#d4d8e3;max-width:600px}.roles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0 16px}.role-card{min-height:130px;text-align:left;padding:16px;border:1px solid #68738b;border-radius:17px;background:#171e30;color:var(--ink);transition:transform .18s,border-color .18s,background .18s}.role-card:hover{transform:translateY(-2px);border-color:var(--gold)}.role-card.selected{border:2px solid var(--gold);background:#333951}.role-card .emoji{font-size:30px;float:right}.role-card strong{display:block;font-size:18px;margin-bottom:3px}.role-card span:last-child{display:block;max-width:220px;color:var(--muted);font-size:12px}
 .primary{border:0;border-radius:13px;background:var(--gold);color:#242333;font-weight:950;padding:13px 19px;box-shadow:0 8px 0 #c89038;transition:transform .15s,box-shadow .15s}.primary:hover{transform:translateY(2px);box-shadow:0 6px 0 #c89038}.primary:active{transform:translateY(6px);box-shadow:0 2px 0 #c89038}.menu-bottom{display:flex;align-items:center;flex-wrap:wrap;gap:13px}.menu-note{font-size:12px;color:var(--muted)}
+.mobile-keys{display:none}
 .controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px}.key{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #ffffff20;border-radius:10px;background:#171e30;color:#e9ebf1;font-size:11px}.key b{color:var(--gold)}
 .end-dialog{text-align:center;width:min(520px,100%)}.end-dialog h2{font-size:34px;letter-spacing:-.05em;margin:9px 0}.end-dialog p{color:#d4d8e3}.end-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
 .toast{position:absolute;z-index:4;left:50%;bottom:18px;transform:translateX(-50%);padding:10px 16px;border:1px solid #ffffff35;border-radius:99px;background:#171b29ee;color:var(--ink);font-size:13px;font-weight:800;white-space:nowrap;box-shadow:0 10px 25px #0006;pointer-events:none;opacity:0;transition:opacity .18s}.toast.show{opacity:1}
 .below{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-top:12px;color:var(--muted);font-size:12px}.below strong{color:var(--gold)}.howto{display:flex;flex-wrap:wrap;gap:7px}
 .touch{display:none}
-@media(max-width:760px){.page{width:calc(100% - 14px);padding:10px 0 18px}.top{margin:0 4px 10px}.subtitle{font-size:9px}.small-btn{padding:8px 9px}.hud{inset:7px 7px auto;gap:4px}.hud-left,.hud-right{gap:4px}.hud-card{min-height:34px;padding:5px 7px;font-size:10px}.hud-label{font-size:8px}.hud .small-btn{padding:6px 8px;font-size:11px}.game{border-radius:14px}canvas{height:min(58vh,480px);aspect-ratio:auto}.overlay{padding:10px}.dialog{padding:17px;border-radius:17px}.roles{gap:7px;margin:14px 0}.role-card{min-height:116px;padding:11px}.role-card .emoji{font-size:25px}.role-card strong{font-size:15px}.role-card span:last-child{font-size:10px}.controls{gap:5px;margin-top:12px}.key{font-size:9px;padding:6px 7px}.below{display:block;margin:8px 4px}.howto{display:none}.touch{position:absolute;z-index:4;bottom:7px;left:7px;right:7px;display:flex;justify-content:space-between;align-items:end;pointer-events:none}.touch-group{display:flex;gap:5px;pointer-events:auto}.touch button{width:42px;height:42px;border:1px solid #ffffff4d;border-radius:13px;background:#171b29df;font-size:18px;font-weight:900;touch-action:none}.touch button.action{width:47px;height:47px;background:#ffd166e8;color:#222}.toast{bottom:61px;font-size:11px;padding:8px 12px}}
+@media(max-width:760px){.page{width:calc(100% - 14px);padding:10px 0 18px}.top{margin:0 4px 10px}.subtitle{font-size:9px}.small-btn{padding:8px 9px}.hud{inset:7px 7px auto;gap:4px}.hud-left,.hud-right{gap:4px}.hud-card{min-height:34px;padding:5px 7px;font-size:10px}.hud-label{font-size:8px}.hud .small-btn{padding:6px 8px;font-size:11px}.game{border-radius:14px}canvas{height:min(70vh,520px);aspect-ratio:auto}.overlay{padding:10px}.dialog{padding:17px;border-radius:17px}.roles{gap:7px;margin:14px 0}.role-card{min-height:116px;padding:11px}.role-card .emoji{font-size:25px}.role-card strong{font-size:15px}.role-card span:last-child{font-size:10px}.controls{display:none}.menu-bottom{position:sticky;bottom:-17px;z-index:2;display:grid;grid-template-columns:1fr;gap:8px;padding:12px 0 10px;background:linear-gradient(0deg,#20263a 82%,#20263a00)}.menu-bottom .primary{width:100%}.mobile-keys{display:block;font-size:10px;color:#d4d8e3}.key{font-size:9px;padding:6px 7px}.below{display:block;margin:8px 4px}.howto{display:none}.touch{position:absolute;z-index:4;bottom:7px;left:7px;right:7px;display:flex;justify-content:space-between;align-items:end;pointer-events:none}.touch-group{display:flex;gap:5px;pointer-events:auto}.touch button{width:42px;height:42px;border:1px solid #ffffff4d;border-radius:13px;background:#171b29df;font-size:18px;font-weight:900;touch-action:none}.touch button.action{width:47px;height:47px;background:#ffd166e8;color:#222}.toast{bottom:61px;font-size:11px;padding:8px 12px}}
 @media(max-width:420px){.brand{gap:8px}.mark{width:34px;height:34px;border-radius:11px}.title{font-size:14px}.roles{grid-template-columns:1fr}.role-card{min-height:84px}.role-card span:last-child{max-width:none}.dialog h1{font-size:35px}.menu-note{font-size:10px}.hud .hide-narrow{display:none}}
 </style>
 </head>
@@ -56,7 +57,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:n
           <button class="role-card" data-role="tom" type="button" aria-pressed="false"><span class="emoji" aria-hidden="true">🐱</span><strong>Играть за Тома</strong><span>Поймай Джерри, пока он не унёс три сыра в норку.</span></button>
           <button class="role-card selected" data-role="jerry" type="button" aria-pressed="true"><span class="emoji" aria-hidden="true">🐭</span><strong>Играть за Джерри</strong><span>Собери три сыра по всему дому и вернись в норку.</span></button>
         </div>
-        <div class="menu-bottom"><button id="startBtn" class="primary" type="button">Начать за Джерри <span aria-hidden="true">→</span></button><span class="menu-note">Музыка включается после старта. Можно выключить вверху.</span></div>
+        <div class="menu-bottom"><button id="startBtn" class="primary" type="button">Начать за Джерри <span aria-hidden="true">→</span></button><span class="menu-note">Музыка включается после старта. Можно выключить вверху.</span><span class="mobile-keys">← → ходить · ↑ ↓ у лестницы — этаж · пробел — прыжок/удар · E — предмет · P — пауза</span></div>
         <div class="controls" aria-label="Управление">
           <span class="key"><b>← →</b> ходить</span><span class="key"><b>↑ ↓</b> лестница</span><span class="key"><b>Пробел</b> прыгать / ударить</span><span class="key"><b>E</b> взять / бросить предмет</span><span class="key"><b>P</b> пауза</span>
         </div>
@@ -443,19 +444,23 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:n
   window.addEventListener("blur",()=>keys.clear());
   document.querySelectorAll("[data-hold]").forEach(btn=>{
     const key=btn.dataset.hold;
-    const down=e=>{e.preventDefault();touch[key]=true;if(key==="left"||key==="right")tapMove(key==="right"?1:-1);if((key==="up"||key==="down")&&state.mode==="playing")moveFloor(player,key==="up"?1:-1);};
-    const up=e=>{e.preventDefault();touch[key]=false;};
+    let pointerHandled=false;
+    const down=e=>{e.preventDefault();pointerHandled=true;touch[key]=true;if(key==="left"||key==="right")tapMove(key==="right"?1:-1);if((key==="up"||key==="down")&&state.mode==="playing")moveFloor(player,key==="up"?1:-1);};
+    const up=e=>{e.preventDefault();touch[key]=false;window.setTimeout(()=>{pointerHandled=false;},0);};
     btn.addEventListener("pointerdown",down);btn.addEventListener("pointerup",up);btn.addEventListener("pointercancel",up);btn.addEventListener("pointerleave",up);
     btn.addEventListener("click",e=>{
-      if(e.detail!==0 || state.mode!=="playing") return;
+      if(pointerHandled || state.mode!=="playing") return;
       if(key==="left"||key==="right") tapMove(key==="right"?1:-1);
       else moveFloor(player,key==="up"?1:-1);
     });
   });
   document.querySelectorAll("[data-action]").forEach(btn=>{
+    let pointerHandled=false;
     const act=()=>{if(btn.dataset.action==="interact")interact();else attack(player,enemy);};
-    btn.addEventListener("pointerdown",e=>{e.preventDefault();act();});
-    btn.addEventListener("click",e=>{if(e.detail===0)act();});
+    btn.addEventListener("pointerdown",e=>{e.preventDefault();pointerHandled=true;act();});
+    btn.addEventListener("pointerup",()=>{window.setTimeout(()=>{pointerHandled=false;},0);});
+    btn.addEventListener("pointercancel",()=>{window.setTimeout(()=>{pointerHandled=false;},0);});
+    btn.addEventListener("click",()=>{if(!pointerHandled)act();});
   });
   // Keep movement keys released if focus leaves the page.
   els.menu.addEventListener("click",e=>{if(e.target===els.menu) return;});
