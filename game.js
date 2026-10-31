@@ -133,7 +133,7 @@
     for (let i = 0; i < 500; i++) {
       const candidate = findOpenSpot(Math.floor(Math.random() * 2), [tomSpawn], 700);
       const horizontalGap = Math.abs(candidate.x - tomSpawn.x);
-      const minimumGap = candidate.f === tomSpawn.f ? 1250 : 760;
+      const minimumGap = candidate.f === tomSpawn.f ? 1800 : 1400;
       if (horizontalGap > minimumGap) { jerrySpawn = candidate; break; }
     }
     if (!jerrySpawn) jerrySpawn = findOpenSpot(1 - tomSpawn.f, [tomSpawn], 700);
@@ -316,6 +316,14 @@
     if (player.stun > 0 || player.climb) { stepChar(player, 0, dt); return; }
     const dir = (keys.has("ArrowRight") || keys.has("KeyD") || touch.right ? 1 : 0) - (keys.has("ArrowLeft") || keys.has("KeyA") || touch.left ? 1 : 0);
     stepChar(player, dir, dt);
+  }
+  function tapMove(dir) {
+    if (state.mode !== "playing" || !player || player.stun > 0 || player.climb) return;
+    player.facing = dir;
+    player.walkT += .7;
+    const nx = clamp(player.x + dir * 38, 30, WORLD_W - 30);
+    if (!blockedMove(nx, player.f, player.jump, player.x)) player.x = nx;
+    updateIdle(player, .01, true);
   }
   function nearestItem(c) {
     return items.filter(i => !i.owner && !i.inFlight).reduce((best, item) => {
@@ -700,14 +708,17 @@
     const key = button.dataset.hold; let pointerHandled = false;
     const down = event => {
       event.preventDefault(); pointerHandled = true;
-      if (key === "left" || key === "right") touch[key] = true;
+      if (key === "left" || key === "right") {
+        touch[key] = true;
+        tapMove(key === "right" ? 1 : -1);
+      }
       else if (state.mode === "playing") startClimb(player, key === "up" ? 1 : -1);
     };
     const up = event => { event.preventDefault(); if (key === "left" || key === "right") touch[key] = false; window.setTimeout(() => { pointerHandled = false; }, 0); };
     button.addEventListener("pointerdown", down); button.addEventListener("pointerup", up); button.addEventListener("pointercancel", up); button.addEventListener("pointerleave", up);
     button.addEventListener("click", () => {
       if (pointerHandled || state.mode !== "playing") return;
-      if (key === "left" || key === "right") { player.facing = key === "right" ? 1 : -1; player.x = clamp(player.x + player.facing * 42, 30, WORLD_W - 30); }
+      if (key === "left" || key === "right") tapMove(key === "right" ? 1 : -1);
       else startClimb(player, key === "up" ? 1 : -1);
     });
   });
