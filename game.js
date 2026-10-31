@@ -132,8 +132,9 @@
     let jerrySpawn = null;
     for (let i = 0; i < 500; i++) {
       const candidate = findOpenSpot(Math.floor(Math.random() * 2), [tomSpawn], 700);
-      const separation = Math.abs(candidate.x - tomSpawn.x) + (candidate.f === tomSpawn.f ? 0 : 1000);
-      if (separation > 1100) { jerrySpawn = candidate; break; }
+      const horizontalGap = Math.abs(candidate.x - tomSpawn.x);
+      const minimumGap = candidate.f === tomSpawn.f ? 1250 : 760;
+      if (horizontalGap > minimumGap) { jerrySpawn = candidate; break; }
     }
     if (!jerrySpawn) jerrySpawn = findOpenSpot(1 - tomSpawn.f, [tomSpawn], 700);
     tom = character("tom", tomSpawn.x, tomSpawn.f); jerry = character("jerry", jerrySpawn.x, jerrySpawn.f);
