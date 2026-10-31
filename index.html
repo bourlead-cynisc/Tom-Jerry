@@ -80,9 +80,12 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:n
 <script>
 (() => {
   "use strict";
-  const canvas = document.getElementById("world");
-  const ctx = canvas.getContext("2d");
   const W = 1200, H = 700, FLOOR = [616, 340], STAIR_X = 568;
+  const canvas = document.getElementById("world");
+  let ctx = canvas.getContext("2d");
+  const scene = document.createElement("canvas");
+  scene.width = W; scene.height = H;
+  const sceneCtx = scene.getContext("2d");
   const $ = (id) => document.getElementById(id);
   const els = {menu:$("menu"), pause:$("pauseOverlay"), end:$("endOverlay"), hud:$("hud"), toast:$("toast"), role:$("roleText"), goal:$("objective"), cheese:$("cheeseText"), item:$("itemText"), floor:$("floorText")};
   const state = {mode:"menu", role:"jerry", elapsed:0, toastTimer:0, last:0, musicOn:true, musicTimer:null, musicStep:0, audio:null};
@@ -350,6 +353,9 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:n
       if(o.type==="desk") {rr(o.x,y-50,o.w,14,6,"#d89a58","#704b3d");rr(o.x+8,y-91,o.w-16,40,6,"#d4b184","#704b3d");line(o.x+12,y-34,o.x+10,y+2,"#704b3d",8);line(o.x+o.w-12,y-34,o.x+o.w-10,y+2,"#704b3d",8);}
     });
   }
+  function cacheScene() {
+    const mainCtx=ctx; ctx=sceneCtx; drawHouse(); drawFurniture(); ctx=mainCtx;
+  }
   function drawCheese(ch) {
     const y=FLOOR[ch.f]-7;ctx.save();ctx.translate(ch.x,y);
     ctx.fillStyle="#ffd166";ctx.strokeStyle="#a86a38";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-18,0);ctx.lineTo(19,-3);ctx.lineTo(-4,-28);ctx.closePath();ctx.fill();ctx.stroke();
@@ -398,7 +404,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:n
     ctx.restore();
   }
   function draw() {
-    ctx.clearRect(0,0,W,H);drawHouse();drawFurniture();cheeses.forEach(ch=>{if(!ch.taken)drawCheese(ch);});items.forEach(drawItem);
+    ctx.clearRect(0,0,W,H);ctx.drawImage(scene,0,0);cheeses.forEach(ch=>{if(!ch.taken)drawCheese(ch);});items.forEach(drawItem);
     // Tiny dust motes make the rooms feel alive.
     for(let i=0;i<8;i++){const x=(i*167+state.elapsed*5)%W,y=70+(i*71)%530+Math.sin(state.elapsed+i)*4;ellipse(x,y,1.5,1.5,"#fff7d966");}
     drawCharacter(enemy);drawCharacter(player);
@@ -464,7 +470,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:n
   });
   // Keep movement keys released if focus leaves the page.
   els.menu.addEventListener("click",e=>{if(e.target===els.menu) return;});
-  draw();frameId=requestAnimationFrame(loop);
+  cacheScene();draw();frameId=requestAnimationFrame(loop);
 })();
 </script>
 </body>
