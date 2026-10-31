@@ -214,7 +214,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:n
   function tapMove(dir) {
     if(state.mode!=="playing" || !player || player.stun>0) return;
     player.facing=dir; player.walkT+=.7;
-    const nx=Math.max(28,Math.min(W-28,player.x+dir*16));
+    const nx=Math.max(28,Math.min(W-28,player.x+dir*28));
     if(!blocked(nx,player.f,player.jump,player.x)) player.x=nx;
     updateIdle(player,.04,true);
   }
@@ -446,8 +446,17 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:n
     const down=e=>{e.preventDefault();touch[key]=true;if(key==="left"||key==="right")tapMove(key==="right"?1:-1);if((key==="up"||key==="down")&&state.mode==="playing")moveFloor(player,key==="up"?1:-1);};
     const up=e=>{e.preventDefault();touch[key]=false;};
     btn.addEventListener("pointerdown",down);btn.addEventListener("pointerup",up);btn.addEventListener("pointercancel",up);btn.addEventListener("pointerleave",up);
+    btn.addEventListener("click",e=>{
+      if(e.detail!==0 || state.mode!=="playing") return;
+      if(key==="left"||key==="right") tapMove(key==="right"?1:-1);
+      else moveFloor(player,key==="up"?1:-1);
+    });
   });
-  document.querySelectorAll("[data-action]").forEach(btn=>btn.addEventListener("pointerdown",e=>{e.preventDefault();if(btn.dataset.action==="interact")interact();else attack(player,enemy);}));
+  document.querySelectorAll("[data-action]").forEach(btn=>{
+    const act=()=>{if(btn.dataset.action==="interact")interact();else attack(player,enemy);};
+    btn.addEventListener("pointerdown",e=>{e.preventDefault();act();});
+    btn.addEventListener("click",e=>{if(e.detail===0)act();});
+  });
   // Keep movement keys released if focus leaves the page.
   els.menu.addEventListener("click",e=>{if(e.target===els.menu) return;});
   draw();frameId=requestAnimationFrame(loop);
