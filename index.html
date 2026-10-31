@@ -189,7 +189,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:n
     if(c.cooldown>0) c.cooldown=Math.max(0,c.cooldown-dt);
     if(c.swing>0) c.swing=Math.max(0,c.swing-dt);
     if(c.walking) {
-      c.facing=dir; c.walkT+=dt*11; const nx=Math.max(28,Math.min(W-28,c.x+dir*230*dt));
+      c.facing=dir; c.walkT+=dt*11; const speed=c===player?270:190; const nx=Math.max(28,Math.min(W-28,c.x+dir*speed*dt));
       if(!blocked(nx,c.f,c.jump,c.x)) c.x=nx;
     }
     if(c.vy!==0 || c.jump>0) {
@@ -210,6 +210,13 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:n
     if(player.stun>0) { stepChar(player,0,dt); return; }
     let d=(keys.has("ArrowRight")||keys.has("KeyD")||touch.right?1:0)-(keys.has("ArrowLeft")||keys.has("KeyA")||touch.left?1:0);
     stepChar(player,d,dt);
+  }
+  function tapMove(dir) {
+    if(state.mode!=="playing" || !player || player.stun>0) return;
+    player.facing=dir; player.walkT+=.7;
+    const nx=Math.max(28,Math.min(W-28,player.x+dir*16));
+    if(!blocked(nx,player.f,player.jump,player.x)) player.x=nx;
+    updateIdle(player,.04,true);
   }
   function nearestItem(c) {
     let best=null, dist=Infinity;
@@ -428,13 +435,15 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:n
       else showToast("Лестница находится в центре каждого этажа");
       return;
     }
+    const moveDir=(code==="ArrowRight"||code==="KeyD")?1:(code==="ArrowLeft"||code==="KeyA")?-1:0;
+    if(moveDir){keys.add(code);tapMove(moveDir);return;}
     keys.add(code);
   });
   window.addEventListener("keyup",e=>keys.delete(e.code));
   window.addEventListener("blur",()=>keys.clear());
   document.querySelectorAll("[data-hold]").forEach(btn=>{
     const key=btn.dataset.hold;
-    const down=e=>{e.preventDefault();touch[key]=true;if((key==="up"||key==="down")&&state.mode==="playing")moveFloor(player,key==="up"?1:-1);};
+    const down=e=>{e.preventDefault();touch[key]=true;if(key==="left"||key==="right")tapMove(key==="right"?1:-1);if((key==="up"||key==="down")&&state.mode==="playing")moveFloor(player,key==="up"?1:-1);};
     const up=e=>{e.preventDefault();touch[key]=false;};
     btn.addEventListener("pointerdown",down);btn.addEventListener("pointerup",up);btn.addEventListener("pointercancel",up);btn.addEventListener("pointerleave",up);
   });
