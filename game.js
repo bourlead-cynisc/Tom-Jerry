@@ -22,7 +22,9 @@
   const ITEM_TYPES = [
     { id: "broom", name: "Швабра", icon: "🧹", uses: 3, help: "широкий взмах, оглушение рядом" },
     { id: "pillow", name: "Подушка", icon: "🛏️", uses: 2, help: "бросок далеко, подберите снова" },
-    { id: "pan", name: "Сковородка", icon: "🍳", uses: 2, help: "короткий сильный удар" }
+    { id: "pan", name: "Сковородка", icon: "🍳", uses: 2, help: "короткий сильный удар" },
+    { id: "ball", name: "Мячик", icon: "🔴", uses: 2, help: "прыгучий бросок на среднюю дистанцию" },
+    { id: "banana", name: "Банановая кожура", icon: "🍌", uses: 1, help: "поставь ловушку; соперник поскользнётся" }
   ];
   const SPRITE_CELL_W = 384;
   const SPRITE_CELL_H = 1024 / 6;
@@ -50,6 +52,7 @@
   let items = [];
   let cheeses = [];
   let projectiles = [];
+  let traps = [];
   let holeX = 0;
   let tom = null;
   let jerry = null;
@@ -65,7 +68,7 @@
   function character(role, x, f) {
     return {
       role, x, f, facing: 1, jump: 0, vy: 0, stun: 0, swing: 0, cooldown: 0,
-      weapon: null, cheese: 0, walking: false, walkT: 0, idleSince: 0,
+      weapon: null, cheese: 0, walking: false, walkT: 0, idleSince: 0, jumpCooldown: 0,
       idleMode: -1, idleT: 0, lastIdle: -1, aiClock: 0, aiDir: 0,
       climb: null, climbAnim: 0, spawnX: x
     };
@@ -183,7 +186,7 @@
   }
 
   function resetWorld(role) {
-    state.role = role; state.elapsed = 0; projectiles = []; items = []; cheeses = [];
+    state.role = role; state.elapsed = 0; projectiles = []; traps = []; items = []; cheeses = [];
     let tomSpawn = findOpenSpot(Math.floor(Math.random() * 2), [], 0);
     let jerrySpawn = null;
     for (let i = 0; i < 500; i++) {
@@ -274,12 +277,17 @@
   function startAudio() { initAudio(); if (state.musicOn && state.audio && !state.musicTimer) musicTick(); }
   function musicTick() {
     if (!state.musicOn || !state.audio || state.mode === "menu" || state.mode === "ended") { state.musicTimer = null; return; }
-    const melody = [659, 784, 988, 784, 698, 880, 1047, 880, 587, 740, 880, 740, 523, 659, 784, 659];
-    const bass = [165, 165, 196, 147], ac = state.audio, t = ac.currentTime, n = state.musicStep++;
-    tone(melody[n % melody.length], .19, "triangle", .032, t, .94);
-    if (n % 4 === 0) tone(bass[Math.floor(n / 4) % bass.length], .42, "sine", .04, t, .92);
-    if (n % 2 === 0) tone(melody[(n + 4) % melody.length] / 2, .13, "sine", .016, t + .16, .96);
-    state.musicTimer = window.setTimeout(musicTick, 245);
+    const melody = [784, 0, 988, 1175, 1047, 0, 988, 880, 784, 0, 659, 784, 880, 0, 988, 1047];
+    const bass = [147, 196, 165, 131], ac = state.audio, t = ac.currentTime, n = state.musicStep++;
+    const note = melody[n % melody.length];
+    if (note) tone(note, .16, "square", .024, t, .97);
+    if (n % 4 === 0) {
+      const root = bass[Math.floor(n / 4) % bass.length];
+      tone(root, .34, "triangle", .045, t, .9);
+      tone(root * 1.5, .21, "sine", .018, t + .035, .96);
+    }
+    if (n % 4 === 2 && note) tone(note / 2, .12, "triangle", .014, t + .12, .95);
+    state.musicTimer = window.setTimeout(musicTick, 205);
   }
   function sfx(kind) {
     if (!state.musicOn) return; initAudio(); if (!state.audio) return;
@@ -287,6 +295,9 @@
     if (kind === "pick") { tone(740, .1, "triangle", .075, t, 1.3); tone(1040, .15, "sine", .055, t + .08, 1.1); }
     else if (kind === "broom") { noiseBurst(.22, .16, 1250); tone(250, .16, "sawtooth", .034, t, .45); }
     else if (kind === "pillow") { noiseBurst(.24, .22, 700); tone(150, .2, "sine", .08, t, .48); }
+    else if (kind === "ball") { tone(420, .15, "sine", .06, t, .58); tone(760, .11, "triangle", .045, t + .1, .7); tone(520, .16, "sine", .04, t + .19, .82); }
+    else if (kind === "banana") { tone(620, .13, "triangle", .055, t, .42); noiseBurst(.16, .11, 980); }
+    else if (kind === "slip") { tone(330, .17, "sine", .055, t, .32); tone(180, .2, "triangle", .045, t + .09, .58); }
     else if (kind === "pan") { tone(720, .3, "square", .075, t, .21); tone(1160, .33, "triangle", .035, t + .015, .38); }
     else if (kind === "hit") { tone(190, .17, "square", .05, t, .5); tone(620, .2, "triangle", .045, t + .04, .48); }
     else if (kind === "cheese") { tone(880, .1, "triangle", .07, t, 1.2); tone(1175, .18, "triangle", .055, t + .1, 1.1); }
@@ -344,6 +355,7 @@
     c.walking = Boolean(dir) && c.stun <= 0;
     if (c.stun > 0) { c.stun = Math.max(0, c.stun - dt); c.walking = false; }
     if (c.cooldown > 0) c.cooldown = Math.max(0, c.cooldown - dt);
+    if (c.jumpCooldown > 0) c.jumpCooldown = Math.max(0, c.jumpCooldown - dt);
     if (c.swing > 0) c.swing = Math.max(0, c.swing - dt);
     if (c.walking) {
       c.facing = dir; c.walkT += dt * 12;
@@ -422,8 +434,9 @@
     enemy.aiClock = .085;
     const distance = Math.abs(tom.x - jerry.x), same = tom.f === jerry.f;
     if (enemy.role === "tom") {
-      const targetRange = tom.weapon?.id === "broom" ? 195 : tom.weapon?.id === "pillow" ? 500 : tom.weapon?.id === "pan" ? 112 : 84;
-      const inAttackRange = same && distance < targetRange && (tom.weapon?.id !== "pillow" || distance > 80);
+      const targetRange = tom.weapon?.id === "broom" || tom.weapon?.id === "banana" ? 195 : tom.weapon?.id === "pillow" ? 500 : tom.weapon?.id === "ball" ? 420 : tom.weapon?.id === "pan" ? 112 : 84;
+      const throws = tom.weapon?.id === "pillow" || tom.weapon?.id === "ball";
+      const inAttackRange = same && distance < targetRange && (!throws || distance > 80);
       const facing = Math.sign(jerry.x - tom.x) || tom.facing;
       const item = nearestItem(tom);
       const interceptHole = jerry.cheese >= CHEESE_GOAL - 1;
@@ -453,8 +466,9 @@
       let target = jerry.cheese >= CHEESE_GOAL ? { x: holeX, f: 0 } : cheese;
       const threatCost = routeCost(jerry, tom.x, tom.f);
       const threatened = same && distance < 340;
-      const weaponRange = jerry.weapon?.id === "broom" ? 195 : jerry.weapon?.id === "pillow" ? 500 : 112;
-      const canFight = same && jerry.weapon && distance < weaponRange && (jerry.weapon.id === "pillow" ? distance > 80 : distance < weaponRange - 12);
+      const weaponRange = jerry.weapon?.id === "broom" || jerry.weapon?.id === "banana" ? 195 : jerry.weapon?.id === "pillow" ? 500 : jerry.weapon?.id === "ball" ? 420 : 112;
+      const throws = jerry.weapon?.id === "pillow" || jerry.weapon?.id === "ball";
+      const canFight = same && jerry.weapon && distance < weaponRange && (throws ? distance > 80 : jerry.weapon.id === "banana" || distance < weaponRange - 12);
       const incoming = !jerry.climb && projectiles.find(p => p.owner === tom && p.f === jerry.f &&
         ((p.dir > 0 && p.x < jerry.x && jerry.x - p.x < 230) || (p.dir < 0 && p.x > jerry.x && p.x - jerry.x < 230)));
       if (canFight && jerry.cooldown <= 0) {
@@ -480,18 +494,36 @@
   function takeItem(c, item) {
     if (!item || item.owner || item.inFlight) return;
     item.owner = c; c.weapon = item; sfx("pick");
-    if (c === player) showToast(`${item.name} взята — пробел для применения`);
+    if (c === player) showToast(`${item.name}: E — применить, Q — выбросить`);
     updateHud();
   }
   function interact() {
     if (state.mode !== "playing" || !player || player.stun > 0 || player.climb) return;
     if (player.weapon) {
-      const item = player.weapon; item.owner = null; item.x = clamp(player.x + player.facing * 42, 30, WORLD_W - 30); item.f = player.f;
-      player.weapon = null; sfx("pick"); showToast("Предмет оставлен на полу"); updateHud(); return;
+      showToast("E — применить предмет, Q — выбросить"); return;
     }
     const item = items.filter(i => !i.owner && !i.inFlight && i.f === player.f && Math.abs(i.x - player.x) < 66)
       .sort((a, b) => Math.abs(a.x - player.x) - Math.abs(b.x - player.x))[0];
     if (item) takeItem(player, item); else showToast("Подойди к предмету и нажми E");
+  }
+  function useOrPickup() {
+    if (state.mode !== "playing" || !player || player.stun > 0 || player.climb) return;
+    if (player.weapon) attack(player, enemy); else interact();
+  }
+  function dropItem(c = player) {
+    if (state.mode !== "playing" || !c || c.stun > 0 || c.climb) return;
+    if (!c.weapon) { if (c === player) showToast("Нечего выбрасывать"); return; }
+    const item = c.weapon;
+    item.owner = null; item.inFlight = false;
+    item.x = clamp(c.x + c.facing * 48, 30, WORLD_W - 30); item.f = c.f;
+    c.weapon = null; sfx("pick");
+    if (c === player) showToast("Предмет выброшен — E, чтобы подобрать");
+    updateHud();
+  }
+  function jump(c) {
+    if (state.mode !== "playing" || !c || c.stun > 0 || c.climb || c.jumpCooldown > 0) return;
+    c.vy = 500; c.jumpCooldown = .42; sfx("jump");
+    if (c === player) showToast("Прыжок!");
   }
   function strike(c, target, item) {
     if (target.f !== c.f || target.climb || target.stun > 0) return false;
@@ -508,11 +540,28 @@
     sfx("pillow"); c.swing = .33; c.cooldown = .56;
     if (c === player) showToast("Подушка летит — соперник оглушён при попадании");
   }
+  function throwBall(c, item) {
+    item.uses -= 1; item.owner = null; item.inFlight = true; c.weapon = null;
+    if (item.uses <= 0) items = items.filter(i => i !== item);
+    projectiles.push({ kind: "ball", x: c.x + c.facing * 42, y: floorY(c.f) - 96, vy: -390, bounces: 2,
+      f: c.f, dir: c.facing, speed: 610, owner: c, item, life: 1.35 });
+    sfx("ball"); c.swing = .3; c.cooldown = .62;
+    if (c === player) showToast("Мячик скачет по полу!");
+  }
+  function placeBanana(c, item) {
+    item.uses = 0; item.owner = null; c.weapon = null;
+    items = items.filter(i => i !== item);
+    traps.push({ x: clamp(c.x + c.facing * 86, 28, WORLD_W - 28), f: c.f, owner: c, life: 14 });
+    sfx("banana"); c.swing = .28; c.cooldown = .72;
+    if (c === player) showToast("Кожура оставлена как ловушка");
+  }
   function attack(c, target) {
     if (state.mode !== "playing" || c.stun > 0 || c.cooldown > 0 || c.climb) return;
-    if (!c.weapon) { c.vy = 500; c.cooldown = .42; sfx("jump"); if (c === player) showToast("Прыжок! E — подобрать предмет"); return; }
+    if (!c.weapon) { if (c === player) showToast("Подними предмет клавишей E"); return; }
     const item = c.weapon;
     if (item.id === "pillow") { throwPillow(c, item); updateHud(); return; }
+    if (item.id === "ball") { throwBall(c, item); updateHud(); return; }
+    if (item.id === "banana") { placeBanana(c, item); updateHud(); return; }
     c.cooldown = item.id === "pan" ? .95 : .68; c.swing = item.id === "broom" ? .46 : .38;
     sfx(item.id);
     if (strike(c, target, item)) {
@@ -532,12 +581,23 @@
     const remaining = [];
     for (const p of projectiles) {
       p.life -= dt; p.x += p.dir * p.speed * dt;
+      if (p.kind === "ball") {
+        p.vy += 980 * dt; p.y += p.vy * dt;
+        const ground = floorY(p.f) - 16;
+        if (p.y >= ground) {
+          p.y = ground;
+          if (p.bounces > 0) { p.vy = -Math.abs(p.vy) * .58; p.bounces -= 1; sfx("ball"); }
+          else p.vy = 0;
+        }
+      }
       const target = p.owner === tom ? jerry : tom;
-      const hits = target.f === p.f && !target.climb && Math.abs(target.x - p.x) < 44 && Math.abs(target.x - p.owner.x) < 520;
+      const targetY = floorY(target.f) - shHeight(target) * .52;
+      const hits = target.f === p.f && !target.climb && Math.abs(target.x - p.x) < 44 && Math.abs(target.x - p.owner.x) < 520 &&
+        (p.kind !== "ball" || Math.abs(targetY - p.y) < 76);
       if (hits) {
         target.stun = 1.8; sfx("hit");
-        if (target === player) showToast("Подушка попала — ты оглушён!");
-        else if (p.owner === player) showToast("Подушка попала в соперника!");
+        if (target === player) showToast(p.kind === "ball" ? "Мячик попал — ты оглушён!" : "Подушка попала — ты оглушён!");
+        else if (p.owner === player) showToast(p.kind === "ball" ? "Мячик попал в соперника!" : "Подушка попала в соперника!");
         p.item.inFlight = false; p.item.x = p.x; p.item.f = p.f;
         if (p.item.uses <= 0) items = items.filter(i => i !== p.item);
       } else if (p.life <= 0 || p.x < 20 || p.x > WORLD_W - 20) {
@@ -546,6 +606,21 @@
       } else { remaining.push(p); continue; }
     }
     projectiles = remaining;
+  }
+  function updateTraps(dt) {
+    const active = [];
+    for (const trap of traps) {
+      trap.life -= dt;
+      if (trap.life <= 0) continue;
+      const target = trap.owner === tom ? jerry : tom;
+      if (target.f === trap.f && !target.climb && target.jump < 28 && target.stun <= 0 && Math.abs(target.x - trap.x) < 34) {
+        target.stun = 1.55; target.walking = false; sfx("slip");
+        if (target === player) showToast("Ой! Ты поскользнулся на кожуре!");
+        continue;
+      }
+      active.push(trap);
+    }
+    traps = active;
   }
   function collectCheese() {
     cheeses.forEach(ch => {
@@ -557,7 +632,7 @@
   }
   function update(dt) {
     if (state.mode !== "playing") return;
-    state.elapsed += dt; playerMove(dt); aiTick(dt); updateProjectiles(dt); collectCheese();
+    state.elapsed += dt; playerMove(dt); aiTick(dt); updateProjectiles(dt); updateTraps(dt); collectCheese();
     if (jerry.cheese >= CHEESE_GOAL && jerry.f === 0 && Math.abs(jerry.x - holeX) < 54 && jerry.jump < 35) {
       sfx("delivery"); finish(jerry === player, jerry === player ? "Пять сыров спрятаны в норке! Джерри снова всех перехитрил." : "Джерри унёс пять сыров в свою норку.");
     }
@@ -688,7 +763,18 @@
     if (item.id === "broom") { line(-19, 11, 10, -22, "#a67049", 7); line(-19, 10, -29, 18, "#6baa8b", 9); line(-19, 10, -6, 20, "#83c7a4", 5); }
     if (item.id === "pillow") { ctx.rotate(-.12); rr(-22, -13, 44, 27, 10, "#e293aa", "#8b5266", 3); line(-10, -9, 10, 9, "#ffd9df", 2); }
     if (item.id === "pan") { line(-5, -2, 16, 9, "#6b7184", 8); ellipse(-11, -8, 19, 14, "#56627d"); ellipse(-11, -10, 13, 9, "#bac8d0"); }
+    if (item.id === "ball") { ellipse(0, -2, 16, 16, "#e75d5d", "#7b3b48"); line(-10, -7, 10, 4, "#ffd166", 4); ellipse(-5, -8, 4, 3, "#fff1d1"); }
+    if (item.id === "banana") { ctx.strokeStyle = "#f1c83c"; ctx.lineWidth = 8; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(-17, 3); ctx.quadraticCurveTo(0, 22, 17, 3); ctx.stroke(); line(-17, 3, -20, -2, "#865436", 4); line(17, 3, 20, -2, "#865436", 4); }
     ctx.fillStyle = "#fff1d1"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(item.name, 0, 35); ctx.restore();
+  }
+  function drawTrap(trap) {
+    const y = floorY(trap.f) - 6;
+    ctx.save(); ctx.translate(trap.x, y);
+    ellipse(0, 8, 23, 5, "#3b35413a");
+    ctx.strokeStyle = "#f1c83c"; ctx.lineWidth = 8; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(-19, 0); ctx.quadraticCurveTo(0, 20, 19, 0); ctx.stroke();
+    line(-19, 0, -22, -5, "#865436", 4); line(19, 0, 22, -5, "#865436", 4);
+    ctx.restore();
   }
   function drawFallbackCharacter(c, y, t, frame) {
     const blink = frame === 2;
@@ -745,8 +831,10 @@
   function shHeight(c) { return c.role === "tom" ? 146 : 86; }
   function drawProjectiles() {
     projectiles.forEach(p => {
-      ctx.save(); ctx.translate(p.x, floorY(p.f) - 87 - Math.sin(state.elapsed * 20) * 4); ctx.rotate(p.dir * .15);
-      rr(-22, -14, 44, 28, 10, "#e293aa", "#8b5266", 3); line(-10, -10, 10, 10, "#ffd9df", 2); ctx.restore();
+      ctx.save(); ctx.translate(p.x, p.kind === "ball" ? p.y : floorY(p.f) - 87 - Math.sin(state.elapsed * 20) * 4);
+      if (p.kind === "ball") { ellipse(0, 0, 15, 15, "#e75d5d", "#7b3b48"); line(-10, -5, 10, 5, "#ffd166", 4); }
+      else { ctx.rotate(p.dir * .15); rr(-22, -14, 44, 28, 10, "#e293aa", "#8b5266", 3); line(-10, -10, 10, 10, "#ffd9df", 2); }
+      ctx.restore();
     });
   }
   function draw() {
@@ -756,7 +844,7 @@
     ctx.save(); ctx.translate(-cameraX, 0);
     if (tom && jerry) drawHole(holeX);
     if (tom && jerry) {
-      cheeses.forEach(ch => { if (!ch.taken) drawCheese(ch); }); items.forEach(drawItem); drawProjectiles();
+      cheeses.forEach(ch => { if (!ch.taken) drawCheese(ch); }); items.forEach(drawItem); traps.forEach(drawTrap); drawProjectiles();
       for (let i = 0; i < 8; i++) { const x = cameraX + (i * 167 + state.elapsed * 5) % VIEW_W, y = 75 + (i * 71) % 520 + Math.sin(state.elapsed + i) * 4; ellipse(x, y, 1.5, 1.5, "#fff7d966"); }
       if (player === tom) { drawCharacter(enemy); drawCharacter(player); } else { drawCharacter(enemy); drawCharacter(player); }
     }
@@ -785,8 +873,9 @@
     if (event.repeat) return;
     if (code === "KeyP") { if (state.mode === "playing" || state.mode === "paused") togglePause(); return; }
     if (state.mode !== "playing") return;
-    if (code === "KeyE" || code === "KeyF") { interact(); return; }
-    if (code === "Space") { attack(player, enemy); return; }
+    if (code === "KeyE") { useOrPickup(); return; }
+    if (code === "KeyQ") { dropItem(); return; }
+    if (code === "Space") { jump(player); return; }
     if (code === "ArrowUp" || code === "KeyW") { startClimb(player, 1); return; }
     if (code === "ArrowDown" || code === "KeyS") { startClimb(player, -1); return; }
     if (["ArrowLeft", "ArrowRight", "KeyA", "KeyD"].includes(code)) keys.add(code);
@@ -813,7 +902,11 @@
   });
   document.querySelectorAll("[data-action]").forEach(button => {
     let pointerHandled = false;
-    const act = () => { if (button.dataset.action === "interact") interact(); else attack(player, enemy); };
+    const act = () => {
+      if (button.dataset.action === "interact") useOrPickup();
+      else if (button.dataset.action === "drop") dropItem();
+      else jump(player);
+    };
     button.addEventListener("pointerdown", event => { event.preventDefault(); pointerHandled = true; act(); });
     button.addEventListener("pointerup", () => window.setTimeout(() => { pointerHandled = false; }, 0));
     button.addEventListener("pointercancel", () => window.setTimeout(() => { pointerHandled = false; }, 0));
