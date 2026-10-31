@@ -5,6 +5,7 @@
   const VIEW_H = 700;
   const ROOM_W = 1200;
   const ROOM_COUNT = 5;
+  const CHEESE_GOAL = 5;
   const WORLD_W = ROOM_W * ROOM_COUNT;
   const FLOOR_Y = [616, 340];
   const ROOM_NAMES = [
@@ -96,12 +97,50 @@
           const x0 = Math.round(col * SPRITE_CELL_W), y0 = Math.round(row * SPRITE_CELL_H);
           const x1 = Math.min(img.width, Math.round((col + 1) * SPRITE_CELL_W));
           const y1 = Math.min(img.height, Math.round((row + 1) * SPRITE_CELL_H));
-          let minX = x1, minY = y1, maxX = x0, maxY = y0;
-          for (let y = y0; y < y1; y += 1) for (let x = x0; x < x1; x += 1) {
-            const alpha = data[(y * img.width + x) * 4 + 3];
-            if (alpha > 28) { minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x); maxY = Math.max(maxY, y); }
+          const width = x1 - x0, height = y1 - y0, length = width * height, threshold = 160;
+          const visited = new Uint8Array(length), stack = new Int32Array(length);
+          let best = null;
+          for (let seed = 0; seed < length; seed += 1) {
+            if (visited[seed]) continue;
+            const seedX = seed % width, seedY = Math.floor(seed / width);
+            const seedAlpha = data[((y0 + seedY) * img.width + x0 + seedX) * 4 + 3];
+            if (seedAlpha <= threshold) { visited[seed] = 1; continue; }
+            let head = 0, tail = 0, count = 0;
+            let minX = seedX, maxX = seedX, minY = seedY, maxY = seedY;
+            visited[seed] = 1; stack[tail++] = seed;
+            while (head < tail) {
+              const index = stack[head++], px = index % width, py = Math.floor(index / width);
+              count += 1; minX = Math.min(minX, px); maxX = Math.max(maxX, px);
+              minY = Math.min(minY, py); maxY = Math.max(maxY, py);
+              let next = px > 0 ? index - 1 : -1;
+              if (next >= 0 && !visited[next]) {
+                visited[next] = 1;
+                if (data[((y0 + py) * img.width + x0 + px - 1) * 4 + 3] > threshold) stack[tail++] = next;
+              }
+              next = px + 1 < width ? index + 1 : -1;
+              if (next >= 0 && !visited[next]) {
+                visited[next] = 1;
+                if (data[((y0 + py) * img.width + x0 + px + 1) * 4 + 3] > threshold) stack[tail++] = next;
+              }
+              next = py > 0 ? index - width : -1;
+              if (next >= 0 && !visited[next]) {
+                visited[next] = 1;
+                if (data[((y0 + py - 1) * img.width + x0 + px) * 4 + 3] > threshold) stack[tail++] = next;
+              }
+              next = py + 1 < height ? index + width : -1;
+              if (next >= 0 && !visited[next]) {
+                visited[next] = 1;
+                if (data[((y0 + py + 1) * img.width + x0 + px) * 4 + 3] > threshold) stack[tail++] = next;
+              }
+            }
+            if (!best || count > best.count) best = { count, minX, minY, maxX, maxY };
           }
-          bounds.push(maxX >= minX ? { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 } : null);
+          if (best) {
+            const pad = 2;
+            const bx = Math.max(0, best.minX - pad), by = Math.max(0, best.minY - pad);
+            const ex = Math.min(width, best.maxX + pad + 1), ey = Math.min(height, best.maxY + pad + 1);
+            bounds.push({ x: x0 + bx, y: y0 + by, w: ex - bx, h: ey - by });
+          } else bounds.push(null);
         }
       }
       sprites[role] = { img, bounds };
@@ -148,14 +187,14 @@
       const item = { ...type, x: spot.x, f: spot.f, owner: null, inFlight: false };
       items.push(item); occupied.push(spot);
     });
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < CHEESE_GOAL; i++) {
       const spot = findOpenSpot(Math.floor(Math.random() * 2), occupied, 180);
       cheeses.push({ x: spot.x, f: spot.f, taken: false }); occupied.push(spot);
     }
     cameraX = clamp(player.x - VIEW_W * 0.39, 0, WORLD_W - VIEW_W);
     lastRoomToast = "";
     els.role.textContent = role === "tom" ? "Том" : "Джерри";
-    els.goal.textContent = role === "tom" ? "Поймай Джерри" : "Собери 3 сыра и вернись в норку";
+    els.goal.textContent = role === "tom" ? "Поймай Джерри" : `Собери ${CHEESE_GOAL} сыров и вернись в норку`;
     els.hud.hidden = false; $("menuBtn").hidden = false;
     updateHud();
   }
@@ -164,7 +203,7 @@
     els.toast.textContent = text; els.toast.classList.add("show"); state.toastTimer = 2.15;
   }
   function updateHud() {
-    els.cheese.textContent = jerry ? `${jerry.cheese} / 3` : "0 / 3";
+    els.cheese.textContent = jerry ? `${jerry.cheese} / ${CHEESE_GOAL}` : `0 / ${CHEESE_GOAL}`;
     els.item.textContent = player && player.weapon ? `${player.weapon.name} ×${player.weapon.uses}` : "нет";
     els.floor.textContent = player ? (player.f === 1 ? "2" : "1") : "1";
     els.room.textContent = player ? ROOM_NAMES[player.f][roomAt(player.x)] : "Гостиная";
@@ -325,15 +364,29 @@
     if (!blockedMove(nx, player.f, player.jump, player.x)) player.x = nx;
     updateIdle(player, .01, true);
   }
+  function routeCost(c, x, f) {
+    if (c.f === f) return Math.abs(x - c.x);
+    return STAIRS.reduce((best, stair) => {
+      const here = c.f === 0 ? stair.lowerX : stair.upperX;
+      const there = f === 0 ? stair.lowerX : stair.upperX;
+      return Math.min(best, Math.abs(c.x - here) + 340 + Math.abs(x - there));
+    }, Infinity);
+  }
   function nearestItem(c) {
     return items.filter(i => !i.owner && !i.inFlight).reduce((best, item) => {
-      const d = Math.abs(item.x - c.x) + (item.f === c.f ? 0 : 1100);
+      const d = routeCost(c, item.x, item.f);
       return !best || d < best.d ? { item, d } : best;
     }, null)?.item || null;
   }
   function routeTo(c, x, f, dt) {
     if (c.f !== f) {
-      const s = nearestStair(c.x), endpoint = c.f === 0 ? s.lowerX : s.upperX;
+      const stair = STAIRS.reduce((best, candidate) => {
+        const from = c.f === 0 ? candidate.lowerX : candidate.upperX;
+        const to = f === 0 ? candidate.lowerX : candidate.upperX;
+        const cost = Math.abs(c.x - from) + 340 + Math.abs(x - to);
+        return !best || cost < best.cost ? { stair: candidate, cost } : best;
+      }, null).stair;
+      const endpoint = c.f === 0 ? stair.lowerX : stair.upperX;
       if (Math.abs(c.x - endpoint) < 44) { startClimb(c, f > c.f ? 1 : -1, true); return 0; }
       return c.x < endpoint ? 1 : -1;
     }
@@ -349,37 +402,60 @@
     if (enemy.climb) { stepEnemy(enemy, 0, dt); return; }
     enemy.aiClock -= dt;
     if (enemy.aiClock > 0) { stepEnemy(enemy, enemy.aiDir || 0, dt); return; }
-    enemy.aiClock = .105;
+    enemy.aiClock = .085;
     const distance = Math.abs(tom.x - jerry.x), same = tom.f === jerry.f;
     if (enemy.role === "tom") {
-      let targetX = jerry.x, targetF = jerry.f;
+      const targetRange = tom.weapon?.id === "broom" ? 195 : tom.weapon?.id === "pillow" ? 500 : tom.weapon?.id === "pan" ? 112 : 84;
+      const inAttackRange = same && distance < targetRange && (tom.weapon?.id !== "pillow" || distance > 80);
+      const facing = Math.sign(jerry.x - tom.x) || tom.facing;
       const item = nearestItem(tom);
-      if (!tom.weapon && item && item.f === tom.f && Math.abs(item.x - tom.x) < 50 && distance > 125) takeItem(tom, item);
-      const tomRange = tom.weapon?.id === "broom" ? 195 : 112;
-      if (same && tom.stun <= 0 && tom.cooldown <= 0 && distance < (tom.weapon ? tomRange : 84)) {
+      const interceptHole = jerry.cheese >= CHEESE_GOAL - 1;
+      let targetX = interceptHole ? holeX : clamp(jerry.x + (jerry.walking ? jerry.facing * 100 : 0), 42, WORLD_W - 42);
+      let targetF = interceptHole ? 0 : jerry.f;
+      if (!tom.weapon && item && item.f === tom.f && Math.abs(item.x - tom.x) < 50 && (!same || distance > 135)) takeItem(tom, item);
+      if (inAttackRange && tom.stun <= 0 && tom.cooldown <= 0) {
+        tom.facing = facing;
         if (tom.weapon) attack(tom, jerry);
         else {
-          tom.cooldown = 1.2; tom.swing = .44; sfx("broom");
-          if (jerry.stun <= 0) { jerry.stun = 1.05; sfx("hit"); if (jerry === player) showToast("Том обездвижил тебя!"); }
+          tom.cooldown = .92; tom.swing = .44; sfx("broom");
+          if (jerry.stun <= 0 && !jerry.climb && jerry.jump < 36) {
+            jerry.stun = 1.05; sfx("hit");
+            if (jerry === player) showToast("Том обездвижил тебя!");
+          }
         }
-      } else if (!tom.weapon && item && distance > 240) { targetX = item.x; targetF = item.f; }
-      enemy.aiDir = distance < (tom.weapon ? 100 : 84) && same ? 0 : routeTo(tom, targetX, targetF, dt);
+      }
+      if (!tom.weapon && item && (!same || distance > 330) && routeCost(tom, item.x, item.f) < Math.min(780, routeCost(tom, targetX, targetF) * .82 + 170)) {
+        targetX = item.x; targetF = item.f;
+      }
+      enemy.aiDir = inAttackRange ? 0 : routeTo(tom, targetX, targetF, dt);
     } else {
-      let target;
-      if (jerry.cheese >= 3) target = { x: holeX, f: 0 };
-      else target = cheeses.filter(ch => !ch.taken).reduce((best, ch) => {
-        const d = Math.abs(ch.x - jerry.x) + (ch.f === jerry.f ? 0 : 1050);
+      const cheese = cheeses.filter(ch => !ch.taken).reduce((best, ch) => {
+        const d = routeCost(jerry, ch.x, ch.f);
         return !best || d < best.d ? { x: ch.x, f: ch.f, d } : best;
       }, null);
-      if (same && distance < 190) {
-        if (jerry.weapon && jerry.cooldown <= 0 && distance < 175) aiAttack(jerry, tom);
-        else target = { x: clamp(jerry.x + (jerry.x < tom.x ? -235 : 235), 42, WORLD_W - 42), f: jerry.f };
+      let target = jerry.cheese >= CHEESE_GOAL ? { x: holeX, f: 0 } : cheese;
+      const threatCost = routeCost(jerry, tom.x, tom.f);
+      const threatened = same && distance < 340;
+      const weaponRange = jerry.weapon?.id === "broom" ? 195 : jerry.weapon?.id === "pillow" ? 500 : 112;
+      const canFight = same && jerry.weapon && distance < weaponRange && (jerry.weapon.id === "pillow" ? distance > 80 : distance < weaponRange - 12);
+      const incoming = !jerry.climb && projectiles.find(p => p.owner === tom && p.f === jerry.f &&
+        ((p.dir > 0 && p.x < jerry.x && jerry.x - p.x < 230) || (p.dir < 0 && p.x > jerry.x && p.x - jerry.x < 230)));
+      if (canFight && jerry.cooldown <= 0) {
+        jerry.facing = Math.sign(tom.x - jerry.x) || jerry.facing;
+        aiAttack(jerry, tom);
       }
       const item = nearestItem(jerry);
-      if (!jerry.weapon && item && distance > 360 && item.f === jerry.f && Math.abs(item.x - jerry.x) < 48) takeItem(jerry, item);
-      let dir = target ? routeTo(jerry, target.x, target.f, dt) : 0;
-      if (same && distance < 190 && target && target.f === jerry.f && !jerry.weapon) dir = jerry.x < tom.x ? -1 : 1;
-      enemy.aiDir = dir;
+      if (!jerry.weapon && item && item.f === jerry.f && Math.abs(item.x - jerry.x) < 50 && (!threatened || jerry.cheese === 0)) takeItem(jerry, item);
+      if (threatened && !canFight) {
+        const escapeDir = jerry.x <= tom.x ? -1 : 1;
+        const preferredX = clamp(jerry.x + escapeDir * 310, 42, WORLD_W - 42);
+        const alternateX = clamp(jerry.x - escapeDir * 260, 42, WORLD_W - 42);
+        const blockedPreferred = blockedMove(preferredX, jerry.f, jerry.jump, jerry.x);
+        target = { x: blockedPreferred && !blockedMove(alternateX, jerry.f, jerry.jump, jerry.x) ? alternateX : preferredX, f: jerry.f };
+      } else if (!jerry.weapon && item && target && item.f === jerry.f && routeCost(jerry, item.x, item.f) + 90 < routeCost(jerry, target.x, target.f) && routeCost(jerry, item.x, item.f) < 620 && (!threatened || distance > 240) && (same || threatCost > 650)) {
+        target = { x: item.x, f: item.f };
+      }
+      enemy.aiDir = incoming ? -incoming.dir : threatened && !canFight && same ? (jerry.x <= tom.x ? -1 : 1) : target ? routeTo(jerry, target.x, target.f, dt) : 0;
     }
     stepEnemy(enemy, enemy.aiDir || 0, dt);
   }
@@ -458,15 +534,15 @@
     cheeses.forEach(ch => {
       if (!ch.taken && jerry.f === ch.f && !jerry.climb && Math.abs(jerry.x - ch.x) < 38 && jerry.jump < 52) {
         ch.taken = true; jerry.cheese += 1; sfx("cheese");
-        showToast(jerry === player ? `Сыр найден! ${jerry.cheese} из 3` : `Джерри нашёл сыр: ${jerry.cheese} из 3`); updateHud();
+        showToast(jerry === player ? `Сыр найден! ${jerry.cheese} из ${CHEESE_GOAL}` : `Джерри нашёл сыр: ${jerry.cheese} из ${CHEESE_GOAL}`); updateHud();
       }
     });
   }
   function update(dt) {
     if (state.mode !== "playing") return;
     state.elapsed += dt; playerMove(dt); aiTick(dt); updateProjectiles(dt); collectCheese();
-    if (jerry.cheese >= 3 && jerry.f === 0 && Math.abs(jerry.x - holeX) < 54 && jerry.jump < 35) {
-      sfx("delivery"); finish(jerry === player, jerry === player ? "Три сыра спрятаны в норке! Джерри снова всех перехитрил." : "Джерри унёс три сыра в свою норку.");
+    if (jerry.cheese >= CHEESE_GOAL && jerry.f === 0 && Math.abs(jerry.x - holeX) < 54 && jerry.jump < 35) {
+      sfx("delivery"); finish(jerry === player, jerry === player ? "Пять сыров спрятаны в норке! Джерри снова всех перехитрил." : "Джерри унёс пять сыров в свою норку.");
     }
     if (state.mode === "playing" && !tom.climb && !jerry.climb && tom.f === jerry.f && Math.abs(tom.x - jerry.x) < 43 && tom.stun <= 0 && jerry.stun <= 0) {
       finish(tom === player, tom === player ? "Том поймал Джерри! Погоня выиграна." : "Том поймал Джерри — сыры пока подождут.");
