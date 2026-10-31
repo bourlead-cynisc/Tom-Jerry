@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11131d">
+  <meta name="description" content="Лёгкая фан-страница о вечном соперничестве Тома и Джерри.">
+  <title>Tom &amp; Jerry — вечная погоня</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f7f2e9;
+      --muted: #b6b4c0;
+      --night: #11131d;
+      --panel: #1b1e2b;
+      --blue: #8eb7ff;
+      --gold: #ffd166;
+      --coral: #ff806c;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--night);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    a { color: inherit; }
+    .wrap { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 25px 0; }
+    .brand { display: flex; gap: 11px; align-items: center; text-decoration: none; font-weight: 800; letter-spacing: -.04em; }
+    .brand-mark { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 13px; color: var(--night); background: var(--gold); font-size: 15px; }
+    nav { display: flex; gap: 28px; color: var(--muted); font-size: 14px; }
+    nav a { text-decoration: none; }
+    nav a:hover { color: var(--ink); }
+    .hero { position: relative; isolation: isolate; display: grid; min-height: 570px; align-items: center; overflow: hidden; padding: 72px 0 82px; }
+    .hero::before { position: absolute; z-index: -1; content: ""; width: 520px; height: 520px; right: -80px; top: 5px; border-radius: 50%; background: radial-gradient(circle, rgba(67,91,151,.34), rgba(17,19,29,0) 68%); }
+    .hero-copy { max-width: 600px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 9px; padding: 8px 13px; border: 1px solid #373b4b; border-radius: 999px; color: var(--gold); font-size: 12px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--coral); box-shadow: 0 0 14px var(--coral); }
+    h1 { margin: 22px 0 15px; font-size: clamp(52px, 9vw, 98px); line-height: .94; letter-spacing: -.075em; }
+    h1 span { color: var(--gold); }
+    .lead { max-width: 520px; margin: 0; color: var(--muted); font-size: clamp(17px, 2vw, 20px); }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 31px; }
+    button, .button-link { min-height: 48px; padding: 0 20px; border: 0; border-radius: 14px; background: var(--gold); color: #171820; font: inherit; font-weight: 800; text-decoration: none; cursor: pointer; transition: transform .2s ease, background .2s ease; }
+    button:hover, .button-link:hover { transform: translateY(-2px); background: #ffe09a; }
+    .action-note { color: var(--muted); font-size: 13px; }
+    .scene { position: absolute; right: 2%; top: 72px; width: min(40vw, 420px); height: 390px; pointer-events: none; }
+    .orbit { position: absolute; inset: 42px 20px 28px; border: 1px dashed rgba(255,255,255,.16); border-radius: 50%; transform: rotate(-18deg); }
+    .spark { position: absolute; color: var(--gold); font-size: 25px; animation: twinkle 2.4s ease-in-out infinite alternate; }
+    .spark.one { left: 16%; top: 18%; }
+    .spark.two { right: 12%; top: 30%; color: var(--coral); animation-delay: .7s; }
+    .spark.three { left: 26%; bottom: 12%; animation-delay: 1.2s; }
+    .character { position: absolute; display: grid; place-items: center; filter: drop-shadow(0 18px 26px rgba(0,0,0,.28)); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+    .tom { width: 200px; height: 240px; right: 8%; top: 3%; transform: rotate(8deg); }
+    .tom .head { position: relative; width: 170px; height: 174px; border-radius: 48% 48% 44% 44%; background: #78849e; }
+    .ear { position: absolute; top: -28px; width: 0; height: 0; border-left: 35px solid transparent; border-right: 35px solid transparent; border-bottom: 75px solid #78849e; }
+    .ear.left { left: 3px; transform: rotate(-18deg); }
+    .ear.right { right: 3px; transform: rotate(18deg); }
+    .ear::after { position: absolute; content: ""; left: -19px; top: 28px; border-left: 19px solid transparent; border-right: 19px solid transparent; border-bottom: 39px solid #f2a4a1; }
+    .eye { position: absolute; top: 67px; width: 39px; height: 51px; border-radius: 50%; background: #fff5dc; }
+    .eye::after { position: absolute; content: ""; width: 9px; height: 20px; left: 15px; top: 16px; border-radius: 50%; background: #252b3b; }
+    .eye.left { left: 35px; transform: rotate(-8deg); }
+    .eye.right { right: 35px; transform: rotate(8deg); }
+    .muzzle { position: absolute; left: 50%; top: 112px; width: 78px; height: 45px; transform: translateX(-50%); border-radius: 50%; background: #e3d6c6; }
+    .nose { position: absolute; z-index: 1; left: 50%; top: 105px; width: 25px; height: 17px; transform: translateX(-50%); border-radius: 60% 60% 55% 55%; background: #f08c91; }
+    .whiskers { position: absolute; top: 128px; width: 33px; height: 1px; background: #726e78; }
+    .whiskers.left { left: 12px; transform: rotate(10deg); box-shadow: 0 11px #726e78; }
+    .whiskers.right { right: 12px; transform: rotate(-10deg); box-shadow: 0 11px #726e78; }
+    .jerry { width: 120px; height: 170px; left: 5%; bottom: 2%; transform: rotate(-8deg); }
+    .jerry .head { position: relative; width: 99px; height: 105px; border-radius: 48% 48% 46% 46%; background: #b97944; }
+    .jerry .ear { top: -18px; border-left-width: 28px; border-right-width: 28px; border-bottom-width: 60px; border-bottom-color: #b97944; }
+    .jerry .ear::after { left: -15px; top: 24px; border-left-width: 15px; border-right-width: 15px; border-bottom-width: 31px; border-bottom-color: #e99c8f; }
+    .jerry .eye { top: 39px; width: 25px; height: 34px; }
+    .jerry .eye::after { width: 6px; height: 13px; left: 10px; top: 11px; }
+    .jerry .eye.left { left: 20px; }
+    .jerry .eye.right { right: 20px; }
+    .jerry .muzzle { top: 68px; width: 52px; height: 29px; background: #f1c69f; }
+    .jerry .nose { top: 64px; width: 17px; height: 12px; background: #483942; }
+    .jerry .whiskers { top: 77px; width: 20px; background: #8a5038; box-shadow: 0 7px #8a5038; }
+    .jerry .whiskers.left { left: 2px; }
+    .jerry .whiskers.right { right: 2px; }
+    .chase .tom { transform: translateX(-34px) rotate(-5deg); }
+    .chase .jerry { transform: translateX(48px) rotate(12deg); }
+    .section { padding: 58px 0 86px; }
+    .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 25px; }
+    .section-heading h2 { margin: 0; font-size: clamp(30px, 4vw, 42px); letter-spacing: -.055em; }
+    .section-heading p { max-width: 360px; margin: 0; color: var(--muted); font-size: 14px; }
+    .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .card { position: relative; min-height: 220px; overflow: hidden; padding: 27px; border: 1px solid #2b2e3b; border-radius: 22px; background: var(--panel); }
+    .card::after { position: absolute; content: ""; width: 190px; height: 190px; right: -52px; bottom: -83px; border-radius: 50%; opacity: .2; }
+    .card.tom-card::after { background: var(--blue); }
+    .card.jerry-card::after { background: var(--coral); }
+    .card-icon { display: grid; width: 43px; height: 43px; place-items: center; border-radius: 15px; background: #2b3040; font-size: 22px; }
+    .card h3 { margin: 19px 0 7px; font-size: 23px; letter-spacing: -.04em; }
+    .card p { max-width: 390px; margin: 0; color: var(--muted); }
+    .quote { margin: 35px 0 0; padding: 20px 22px; border-left: 3px solid var(--gold); color: #ddd8cf; background: rgba(255,209,102,.06); border-radius: 0 14px 14px 0; }
+    footer { display: flex; justify-content: space-between; gap: 18px; padding: 25px 0 35px; border-top: 1px solid #2b2e3b; color: var(--muted); font-size: 12px; }
+    footer p { margin: 0; }
+    @keyframes twinkle { to { transform: scale(.7) rotate(22deg); opacity: .48; } }
+    @media (max-width: 760px) {
+      .hero { min-height: 680px; align-items: start; padding-top: 66px; }
+      .scene { top: 310px; right: 7%; width: 84vw; max-width: 390px; height: 330px; }
+      .tom { transform: scale(.84) rotate(8deg); transform-origin: top right; }
+      .chase .tom { transform: scale(.84) translateX(-34px) rotate(-5deg); }
+      .section-heading { align-items: start; flex-direction: column; }
+      .cards { grid-template-columns: 1fr; }
+      footer { flex-direction: column; }
+      nav { gap: 15px; font-size: 12px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="#top" aria-label="Tom and Jerry — в начало">
+        <span class="brand-mark">T&amp;J</span><span>Классика погони</span>
+      </a>
+      <nav aria-label="Навигация">
+        <a href="#story">История</a>
+        <a href="#heroes">Герои</a>
+      </nav>
+    </header>
+    <main id="top">
+      <section class="hero" aria-labelledby="title">
+        <div class="hero-copy">
+          <span class="eyebrow"><span class="dot"></span> Кошки-мышки, вечная классика</span>
+          <h1 id="title">Tom <span>&amp;</span><br>Jerry</h1>
+          <p class="lead">Один дом, две большие идеи и бесконечная погоня. История, где за каждым тихим утром уже прячется новый план.</p>
+          <div class="actions">
+            <button id="chase-button" type="button" aria-pressed="false">Запустить погоню <span aria-hidden="true">↗</span></button>
+            <span class="action-note" id="chase-note" aria-live="polite">Нажми — и начнётся переполох</span>
+          </div>
+        </div>
+        <div class="scene" id="scene" aria-hidden="true">
+          <div class="orbit"></div><span class="spark one">✦</span><span class="spark two">✳</span><span class="spark three">✦</span>
+          <div class="character tom"><div class="head"><span class="ear left"></span><span class="ear right"></span><span class="eye left"></span><span class="eye right"></span><span class="muzzle"></span><span class="nose"></span><span class="whiskers left"></span><span class="whiskers right"></span></div></div>
+          <div class="character jerry"><div class="head"><span class="ear left"></span><span class="ear right"></span><span class="eye left"></span><span class="eye right"></span><span class="muzzle"></span><span class="nose"></span><span class="whiskers left"></span><span class="whiskers right"></span></div></div>
+        </div>
+      </section>
+      <section class="section" id="story" aria-labelledby="story-title">
+        <div class="section-heading">
+          <h2 id="story-title">План всегда один</h2>
+          <p>Но у этой парочки даже самый простой день легко превращается в целое приключение.</p>
+        </div>
+        <div class="cards" id="heroes">
+          <article class="card tom-card">
+            <span class="card-icon" aria-hidden="true">🐱</span>
+            <h3>Том — мастер планов</h3>
+            <p>Уверен, что сегодня всё получится. Особенно если у него есть хитрый план и немного удачи.</p>
+          </article>
+          <article class="card jerry-card">
+            <span class="card-icon" aria-hidden="true">🐭</span>
+            <h3>Джерри — шаг впереди</h3>
+            <p>Маленький, быстрый и находчивый. У него всегда найдётся выход — и кусочек сыра.</p>
+          </article>
+        </div>
+        <p class="quote">«Самое интересное начинается, когда кажется, что всё уже спокойно».</p>
+      </section>
+    </main>
+    <footer>
+      <p>Небольшая фан-страница о мультсериале Tom &amp; Jerry.</p>
+      <p>Сделано с улыбкой · <a href="#top">Наверх ↑</a></p>
+    </footer>
+  </div>
+  <script>
+    const scene = document.getElementById('scene');
+    const button = document.getElementById('chase-button');
+    const note = document.getElementById('chase-note');
+    button.addEventListener('click', () => {
+      const running = scene.classList.toggle('chase');
+      button.setAttribute('aria-pressed', String(running));
+      button.firstChild.textContent = running ? 'Остановить погоню ' : 'Запустить погоню ';
+      note.textContent = running ? 'Джерри опять впереди!' : 'Том уже строит новый план';
+    });
+  </script>
+</body>
+</html>
