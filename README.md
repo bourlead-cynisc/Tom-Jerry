@@ -1,2 +1,7 @@
-# Tom-Jerry
-A playful fan page inspired by Tom &amp; Jerry
+# Tom & Jerry
+
+Небольшая неофициальная фан-страница о классической погоне Тома и Джерри. Одностраничный адаптивный сайт с CSS-иллюстрацией и интерактивной кнопкой.
+
+Сайт: https://bourlead-cynisc.github.io/Tom-Jerry/
+
+Главная страница находится в `index.html`. GitHub Pages публикует корень ветки `main`.
