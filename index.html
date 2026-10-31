@@ -1,180 +1,448 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#11131d">
-  <meta name="description" content="Лёгкая фан-страница о вечном соперничестве Тома и Джерри.">
-  <title>Tom &amp; Jerry — вечная погоня</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      --ink: #f7f2e9;
-      --muted: #b6b4c0;
-      --night: #11131d;
-      --panel: #1b1e2b;
-      --blue: #8eb7ff;
-      --gold: #ffd166;
-      --coral: #ff806c;
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      background: var(--night);
-      color: var(--ink);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.55;
-    }
-    a { color: inherit; }
-    .wrap { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
-    header { display: flex; justify-content: space-between; align-items: center; padding: 25px 0; }
-    .brand { display: flex; gap: 11px; align-items: center; text-decoration: none; font-weight: 800; letter-spacing: -.04em; }
-    .brand-mark { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 13px; color: var(--night); background: var(--gold); font-size: 15px; }
-    nav { display: flex; gap: 28px; color: var(--muted); font-size: 14px; }
-    nav a { text-decoration: none; }
-    nav a:hover { color: var(--ink); }
-    .hero { position: relative; isolation: isolate; display: grid; min-height: 570px; align-items: center; overflow: hidden; padding: 72px 0 82px; }
-    .hero::before { position: absolute; z-index: -1; content: ""; width: 520px; height: 520px; right: -80px; top: 5px; border-radius: 50%; background: radial-gradient(circle, rgba(67,91,151,.34), rgba(17,19,29,0) 68%); }
-    .hero-copy { max-width: 600px; }
-    .eyebrow { display: inline-flex; align-items: center; gap: 9px; padding: 8px 13px; border: 1px solid #373b4b; border-radius: 999px; color: var(--gold); font-size: 12px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
-    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--coral); box-shadow: 0 0 14px var(--coral); }
-    h1 { margin: 22px 0 15px; font-size: clamp(52px, 9vw, 98px); line-height: .94; letter-spacing: -.075em; }
-    h1 span { color: var(--gold); }
-    .lead { max-width: 520px; margin: 0; color: var(--muted); font-size: clamp(17px, 2vw, 20px); }
-    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 31px; }
-    button, .button-link { min-height: 48px; padding: 0 20px; border: 0; border-radius: 14px; background: var(--gold); color: #171820; font: inherit; font-weight: 800; text-decoration: none; cursor: pointer; transition: transform .2s ease, background .2s ease; }
-    button:hover, .button-link:hover { transform: translateY(-2px); background: #ffe09a; }
-    .action-note { color: var(--muted); font-size: 13px; }
-    .scene { position: absolute; right: 2%; top: 72px; width: min(40vw, 420px); height: 390px; pointer-events: none; }
-    .orbit { position: absolute; inset: 42px 20px 28px; border: 1px dashed rgba(255,255,255,.16); border-radius: 50%; transform: rotate(-18deg); }
-    .spark { position: absolute; color: var(--gold); font-size: 25px; animation: twinkle 2.4s ease-in-out infinite alternate; }
-    .spark.one { left: 16%; top: 18%; }
-    .spark.two { right: 12%; top: 30%; color: var(--coral); animation-delay: .7s; }
-    .spark.three { left: 26%; bottom: 12%; animation-delay: 1.2s; }
-    .character { position: absolute; display: grid; place-items: center; filter: drop-shadow(0 18px 26px rgba(0,0,0,.28)); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
-    .tom { width: 200px; height: 240px; right: 8%; top: 3%; transform: rotate(8deg); }
-    .tom .head { position: relative; width: 170px; height: 174px; border-radius: 48% 48% 44% 44%; background: #78849e; }
-    .ear { position: absolute; top: -28px; width: 0; height: 0; border-left: 35px solid transparent; border-right: 35px solid transparent; border-bottom: 75px solid #78849e; }
-    .ear.left { left: 3px; transform: rotate(-18deg); }
-    .ear.right { right: 3px; transform: rotate(18deg); }
-    .ear::after { position: absolute; content: ""; left: -19px; top: 28px; border-left: 19px solid transparent; border-right: 19px solid transparent; border-bottom: 39px solid #f2a4a1; }
-    .eye { position: absolute; top: 67px; width: 39px; height: 51px; border-radius: 50%; background: #fff5dc; }
-    .eye::after { position: absolute; content: ""; width: 9px; height: 20px; left: 15px; top: 16px; border-radius: 50%; background: #252b3b; }
-    .eye.left { left: 35px; transform: rotate(-8deg); }
-    .eye.right { right: 35px; transform: rotate(8deg); }
-    .muzzle { position: absolute; left: 50%; top: 112px; width: 78px; height: 45px; transform: translateX(-50%); border-radius: 50%; background: #e3d6c6; }
-    .nose { position: absolute; z-index: 1; left: 50%; top: 105px; width: 25px; height: 17px; transform: translateX(-50%); border-radius: 60% 60% 55% 55%; background: #f08c91; }
-    .whiskers { position: absolute; top: 128px; width: 33px; height: 1px; background: #726e78; }
-    .whiskers.left { left: 12px; transform: rotate(10deg); box-shadow: 0 11px #726e78; }
-    .whiskers.right { right: 12px; transform: rotate(-10deg); box-shadow: 0 11px #726e78; }
-    .jerry { width: 120px; height: 170px; left: 5%; bottom: 2%; transform: rotate(-8deg); }
-    .jerry .head { position: relative; width: 99px; height: 105px; border-radius: 48% 48% 46% 46%; background: #b97944; }
-    .jerry .ear { top: -18px; border-left-width: 28px; border-right-width: 28px; border-bottom-width: 60px; border-bottom-color: #b97944; }
-    .jerry .ear::after { left: -15px; top: 24px; border-left-width: 15px; border-right-width: 15px; border-bottom-width: 31px; border-bottom-color: #e99c8f; }
-    .jerry .eye { top: 39px; width: 25px; height: 34px; }
-    .jerry .eye::after { width: 6px; height: 13px; left: 10px; top: 11px; }
-    .jerry .eye.left { left: 20px; }
-    .jerry .eye.right { right: 20px; }
-    .jerry .muzzle { top: 68px; width: 52px; height: 29px; background: #f1c69f; }
-    .jerry .nose { top: 64px; width: 17px; height: 12px; background: #483942; }
-    .jerry .whiskers { top: 77px; width: 20px; background: #8a5038; box-shadow: 0 7px #8a5038; }
-    .jerry .whiskers.left { left: 2px; }
-    .jerry .whiskers.right { right: 2px; }
-    .chase .tom { transform: translateX(-34px) rotate(-5deg); }
-    .chase .jerry { transform: translateX(48px) rotate(12deg); }
-    .section { padding: 58px 0 86px; }
-    .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 25px; }
-    .section-heading h2 { margin: 0; font-size: clamp(30px, 4vw, 42px); letter-spacing: -.055em; }
-    .section-heading p { max-width: 360px; margin: 0; color: var(--muted); font-size: 14px; }
-    .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-    .card { position: relative; min-height: 220px; overflow: hidden; padding: 27px; border: 1px solid #2b2e3b; border-radius: 22px; background: var(--panel); }
-    .card::after { position: absolute; content: ""; width: 190px; height: 190px; right: -52px; bottom: -83px; border-radius: 50%; opacity: .2; }
-    .card.tom-card::after { background: var(--blue); }
-    .card.jerry-card::after { background: var(--coral); }
-    .card-icon { display: grid; width: 43px; height: 43px; place-items: center; border-radius: 15px; background: #2b3040; font-size: 22px; }
-    .card h3 { margin: 19px 0 7px; font-size: 23px; letter-spacing: -.04em; }
-    .card p { max-width: 390px; margin: 0; color: var(--muted); }
-    .quote { margin: 35px 0 0; padding: 20px 22px; border-left: 3px solid var(--gold); color: #ddd8cf; background: rgba(255,209,102,.06); border-radius: 0 14px 14px 0; }
-    footer { display: flex; justify-content: space-between; gap: 18px; padding: 25px 0 35px; border-top: 1px solid #2b2e3b; color: var(--muted); font-size: 12px; }
-    footer p { margin: 0; }
-    @keyframes twinkle { to { transform: scale(.7) rotate(22deg); opacity: .48; } }
-    @media (max-width: 760px) {
-      .hero { min-height: 680px; align-items: start; padding-top: 66px; }
-      .scene { top: 310px; right: 7%; width: 84vw; max-width: 390px; height: 330px; }
-      .tom { transform: scale(.84) rotate(8deg); transform-origin: top right; }
-      .chase .tom { transform: scale(.84) translateX(-34px) rotate(-5deg); }
-      .section-heading { align-items: start; flex-direction: column; }
-      .cards { grid-template-columns: 1fr; }
-      footer { flex-direction: column; }
-      nav { gap: 15px; font-size: 12px; }
-    }
-    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#171b29">
+<meta name="description" content="Tom & Jerry: двухэтажная погоня по дому. Играй за Тома или Джерри.">
+<title>Tom &amp; Jerry — Великая погоня</title>
+<style>
+:root{color-scheme:dark;--ink:#fff8e9;--muted:#bbc1d1;--night:#171b29;--panel:#232a3d;--gold:#ffd166;--blue:#8eb7ff;--coral:#ff806c;--mint:#9ee0bd}
+*{box-sizing:border-box}html{min-height:100%;background:var(--night)}body{margin:0;color:var(--ink);font:15px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 50% -15%,#354466 0,#171b29 58%);min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}button:focus-visible{outline:3px solid #fff;outline-offset:3px}.page{width:min(1250px,calc(100% - 28px));margin:0 auto;padding:20px 0 28px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:14px}.brand{display:flex;align-items:center;gap:12px}.mark{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:var(--gold);color:#242333;font-weight:950;letter-spacing:-.1em}.title{font-size:16px;font-weight:850;letter-spacing:-.04em}.subtitle{font-size:11px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase}.top-actions{display:flex;gap:8px}
+.small-btn{border:1px solid #434c65;background:#232a3dbf;border-radius:12px;padding:9px 12px;font-weight:750;font-size:13px}.small-btn:hover{background:#303b55}
+.game{position:relative;border:1px solid #49536c;border-radius:20px;overflow:hidden;background:#d7c39b;box-shadow:0 24px 70px #070a14a8}
+canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:none}
+.hud{position:absolute;z-index:3;inset:12px 14px auto;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;pointer-events:none}.hud-left,.hud-right{display:flex;gap:8px;align-items:flex-start}.hud-card{min-height:42px;padding:8px 12px;border:1px solid #ffffff2d;border-radius:12px;background:#171b29dc;backdrop-filter:blur(8px);box-shadow:0 6px 18px #0003;font-size:12px}.hud-label{display:block;color:#bbc1d1;font-size:10px;text-transform:uppercase;letter-spacing:.1em}.hud-value{font-weight:850}.hud button{pointer-events:auto}.hud .small-btn{border-color:#ffffff32;background:#171b29e8}
+.overlay{position:absolute;z-index:5;inset:0;display:grid;place-items:center;padding:22px;background:linear-gradient(120deg,#101522e8,#15192bdc 55%,#111726e8);overflow:auto}.dialog{width:min(720px,100%);max-height:100%;overflow:auto;padding:clamp(18px,4vw,34px);border:1px solid #ffffff2c;border-radius:22px;background:linear-gradient(155deg,#28324b,#20263a 64%,#2a2c43);box-shadow:0 30px 90px #0008}
+.kicker{color:var(--gold);font-size:11px;font-weight:850;letter-spacing:.15em;text-transform:uppercase}.dialog h1{font-size:clamp(32px,6vw,58px);line-height:.98;letter-spacing:-.07em;margin:10px 0 12px}.dialog h1 span{color:var(--gold)}.intro{margin:0;color:#d4d8e3;max-width:600px}.roles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0 16px}.role-card{min-height:130px;text-align:left;padding:16px;border:1px solid #68738b;border-radius:17px;background:#171e30;color:var(--ink);transition:transform .18s,border-color .18s,background .18s}.role-card:hover{transform:translateY(-2px);border-color:var(--gold)}.role-card.selected{border:2px solid var(--gold);background:#333951}.role-card .emoji{font-size:30px;float:right}.role-card strong{display:block;font-size:18px;margin-bottom:3px}.role-card span:last-child{display:block;max-width:220px;color:var(--muted);font-size:12px}
+.primary{border:0;border-radius:13px;background:var(--gold);color:#242333;font-weight:950;padding:13px 19px;box-shadow:0 8px 0 #c89038;transition:transform .15s,box-shadow .15s}.primary:hover{transform:translateY(2px);box-shadow:0 6px 0 #c89038}.primary:active{transform:translateY(6px);box-shadow:0 2px 0 #c89038}.menu-bottom{display:flex;align-items:center;flex-wrap:wrap;gap:13px}.menu-note{font-size:12px;color:var(--muted)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px}.key{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #ffffff20;border-radius:10px;background:#171e30;color:#e9ebf1;font-size:11px}.key b{color:var(--gold)}
+.end-dialog{text-align:center;width:min(520px,100%)}.end-dialog h2{font-size:34px;letter-spacing:-.05em;margin:9px 0}.end-dialog p{color:#d4d8e3}.end-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+.toast{position:absolute;z-index:4;left:50%;bottom:18px;transform:translateX(-50%);padding:10px 16px;border:1px solid #ffffff35;border-radius:99px;background:#171b29ee;color:var(--ink);font-size:13px;font-weight:800;white-space:nowrap;box-shadow:0 10px 25px #0006;pointer-events:none;opacity:0;transition:opacity .18s}.toast.show{opacity:1}
+.below{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-top:12px;color:var(--muted);font-size:12px}.below strong{color:var(--gold)}.howto{display:flex;flex-wrap:wrap;gap:7px}
+.touch{display:none}
+@media(max-width:760px){.page{width:calc(100% - 14px);padding:10px 0 18px}.top{margin:0 4px 10px}.subtitle{font-size:9px}.small-btn{padding:8px 9px}.hud{inset:7px 7px auto;gap:4px}.hud-left,.hud-right{gap:4px}.hud-card{min-height:34px;padding:5px 7px;font-size:10px}.hud-label{font-size:8px}.hud .small-btn{padding:6px 8px;font-size:11px}.game{border-radius:14px}canvas{height:min(58vh,480px);aspect-ratio:auto}.overlay{padding:10px}.dialog{padding:17px;border-radius:17px}.roles{gap:7px;margin:14px 0}.role-card{min-height:116px;padding:11px}.role-card .emoji{font-size:25px}.role-card strong{font-size:15px}.role-card span:last-child{font-size:10px}.controls{gap:5px;margin-top:12px}.key{font-size:9px;padding:6px 7px}.below{display:block;margin:8px 4px}.howto{display:none}.touch{position:absolute;z-index:4;bottom:7px;left:7px;right:7px;display:flex;justify-content:space-between;align-items:end;pointer-events:none}.touch-group{display:flex;gap:5px;pointer-events:auto}.touch button{width:42px;height:42px;border:1px solid #ffffff4d;border-radius:13px;background:#171b29df;font-size:18px;font-weight:900;touch-action:none}.touch button.action{width:47px;height:47px;background:#ffd166e8;color:#222}.toast{bottom:61px;font-size:11px;padding:8px 12px}}
+@media(max-width:420px){.brand{gap:8px}.mark{width:34px;height:34px;border-radius:11px}.title{font-size:14px}.roles{grid-template-columns:1fr}.role-card{min-height:84px}.role-card span:last-child{max-width:none}.dialog h1{font-size:35px}.menu-note{font-size:10px}.hud .hide-narrow{display:none}}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <a class="brand" href="#top" aria-label="Tom and Jerry — в начало">
-        <span class="brand-mark">T&amp;J</span><span>Классика погони</span>
-      </a>
-      <nav aria-label="Навигация">
-        <a href="#story">История</a>
-        <a href="#heroes">Герои</a>
-      </nav>
-    </header>
-    <main id="top">
-      <section class="hero" aria-labelledby="title">
-        <div class="hero-copy">
-          <span class="eyebrow"><span class="dot"></span> Кошки-мышки, вечная классика</span>
-          <h1 id="title">Tom <span>&amp;</span><br>Jerry</h1>
-          <p class="lead">Один дом, две большие идеи и бесконечная погоня. История, где за каждым тихим утром уже прячется новый план.</p>
-          <div class="actions">
-            <button id="chase-button" type="button" aria-pressed="false">Запустить погоню <span aria-hidden="true">↗</span></button>
-            <span class="action-note" id="chase-note" aria-live="polite">Нажми — и начнётся переполох</span>
-          </div>
+<main class="page">
+  <header class="top">
+    <div class="brand"><div class="mark">T&amp;J</div><div><div class="title">Tom &amp; Jerry: Великая погоня</div><div class="subtitle">двухэтажный хаос · 2D-аркада</div></div></div>
+    <div class="top-actions"><button id="soundBtn" class="small-btn" type="button" aria-pressed="true">♫ Звук: вкл.</button><button id="menuBtn" class="small-btn" type="button" hidden>Меню</button></div>
+  </header>
+  <section class="game" aria-label="Игра Tom and Jerry">
+    <canvas id="world" width="1200" height="700" aria-label="Дом в разрезе: два этажа, мебель и игровые персонажи"></canvas>
+    <div id="hud" class="hud" hidden>
+      <div class="hud-left">
+        <div class="hud-card"><span class="hud-label">Ты играешь за</span><span id="roleText" class="hud-value">Джерри</span></div>
+        <div class="hud-card"><span class="hud-label">Цель</span><span id="objective" class="hud-value">Найди сыр</span></div>
+      </div>
+      <div class="hud-right">
+        <div class="hud-card"><span class="hud-label">Сыр</span><span id="cheeseText" class="hud-value">0 / 3</span></div>
+        <div class="hud-card hide-narrow"><span class="hud-label">Предмет</span><span id="itemText" class="hud-value">нет</span></div>
+        <div class="hud-card"><span class="hud-label">Этаж</span><span id="floorText" class="hud-value">1</span></div>
+        <button id="pauseBtn" class="small-btn" type="button" aria-label="Пауза">Ⅱ</button>
+      </div>
+    </div>
+    <div id="menu" class="overlay">
+      <div class="dialog">
+        <div class="kicker">Семейная аркада · играй против компьютера</div>
+        <h1>Tom <span>&amp;</span> Jerry<br>Великая погоня</h1>
+        <p class="intro">Два этажа, уютный дом и один очень важный вопрос: кто сегодня быстрее — кот или мышонок?</p>
+        <div class="roles" role="group" aria-label="Выбор персонажа">
+          <button class="role-card" data-role="tom" type="button" aria-pressed="false"><span class="emoji" aria-hidden="true">🐱</span><strong>Играть за Тома</strong><span>Поймай Джерри, пока он не унёс три сыра в норку.</span></button>
+          <button class="role-card selected" data-role="jerry" type="button" aria-pressed="true"><span class="emoji" aria-hidden="true">🐭</span><strong>Играть за Джерри</strong><span>Собери три сыра по всему дому и вернись в норку.</span></button>
         </div>
-        <div class="scene" id="scene" aria-hidden="true">
-          <div class="orbit"></div><span class="spark one">✦</span><span class="spark two">✳</span><span class="spark three">✦</span>
-          <div class="character tom"><div class="head"><span class="ear left"></span><span class="ear right"></span><span class="eye left"></span><span class="eye right"></span><span class="muzzle"></span><span class="nose"></span><span class="whiskers left"></span><span class="whiskers right"></span></div></div>
-          <div class="character jerry"><div class="head"><span class="ear left"></span><span class="ear right"></span><span class="eye left"></span><span class="eye right"></span><span class="muzzle"></span><span class="nose"></span><span class="whiskers left"></span><span class="whiskers right"></span></div></div>
+        <div class="menu-bottom"><button id="startBtn" class="primary" type="button">Начать за Джерри <span aria-hidden="true">→</span></button><span class="menu-note">Музыка включается после старта. Можно выключить вверху.</span></div>
+        <div class="controls" aria-label="Управление">
+          <span class="key"><b>← →</b> ходить</span><span class="key"><b>↑ ↓</b> лестница</span><span class="key"><b>Пробел</b> прыгать / ударить</span><span class="key"><b>E</b> взять / бросить предмет</span><span class="key"><b>P</b> пауза</span>
         </div>
-      </section>
-      <section class="section" id="story" aria-labelledby="story-title">
-        <div class="section-heading">
-          <h2 id="story-title">План всегда один</h2>
-          <p>Но у этой парочки даже самый простой день легко превращается в целое приключение.</p>
-        </div>
-        <div class="cards" id="heroes">
-          <article class="card tom-card">
-            <span class="card-icon" aria-hidden="true">🐱</span>
-            <h3>Том — мастер планов</h3>
-            <p>Уверен, что сегодня всё получится. Особенно если у него есть хитрый план и немного удачи.</p>
-          </article>
-          <article class="card jerry-card">
-            <span class="card-icon" aria-hidden="true">🐭</span>
-            <h3>Джерри — шаг впереди</h3>
-            <p>Маленький, быстрый и находчивый. У него всегда найдётся выход — и кусочек сыра.</p>
-          </article>
-        </div>
-        <p class="quote">«Самое интересное начинается, когда кажется, что всё уже спокойно».</p>
-      </section>
-    </main>
-    <footer>
-      <p>Небольшая фан-страница о мультсериале Tom &amp; Jerry.</p>
-      <p>Сделано с улыбкой · <a href="#top">Наверх ↑</a></p>
-    </footer>
-  </div>
-  <script>
-    const scene = document.getElementById('scene');
-    const button = document.getElementById('chase-button');
-    const note = document.getElementById('chase-note');
-    button.addEventListener('click', () => {
-      const running = scene.classList.toggle('chase');
-      button.setAttribute('aria-pressed', String(running));
-      button.firstChild.textContent = running ? 'Остановить погоню ' : 'Запустить погоню ';
-      note.textContent = running ? 'Джерри опять впереди!' : 'Том уже строит новый план';
+      </div>
+    </div>
+    <div id="pauseOverlay" class="overlay" hidden>
+      <div class="dialog end-dialog"><div class="kicker">Передышка</div><h2>Пауза</h2><p>Погоня подождёт.</p><div class="end-actions"><button id="resumeBtn" class="primary" type="button">Продолжить</button><button id="restartBtn" class="small-btn" type="button">Заново</button></div></div>
+    </div>
+    <div id="endOverlay" class="overlay" hidden>
+      <div class="dialog end-dialog"><div id="endKicker" class="kicker">Финиш</div><h2 id="endTitle">Победа!</h2><p id="endText"></p><div class="end-actions"><button id="againBtn" class="primary" type="button">Сыграть ещё</button><button id="endMenuBtn" class="small-btn" type="button">Выбрать героя</button></div></div>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="touch" class="touch" aria-label="Сенсорное управление">
+      <div class="touch-group"><button data-hold="left" aria-label="Влево">←</button><button data-hold="right" aria-label="Вправо">→</button><button data-hold="up" aria-label="На второй этаж">↟</button><button data-hold="down" aria-label="На первый этаж">↡</button></div>
+      <div class="touch-group"><button class="action" data-action="interact" aria-label="Взять предмет">E</button><button class="action" data-action="attack" aria-label="Прыжок или удар">✦</button></div>
+    </div>
+  </section>
+  <footer class="below"><span><strong>Подсказка:</strong> прыгай через диван и стол, ищи предметы для оглушающего удара.</span><span class="howto"><span class="key"><b>↑ / ↓</b> у лестницы — сменить этаж</span><span class="key"><b>E</b> подобрать</span></span></footer>
+</main>
+<script>
+(() => {
+  "use strict";
+  const canvas = document.getElementById("world");
+  const ctx = canvas.getContext("2d");
+  const W = 1200, H = 700, FLOOR = [616, 340], STAIR_X = 568;
+  const $ = (id) => document.getElementById(id);
+  const els = {menu:$("menu"), pause:$("pauseOverlay"), end:$("endOverlay"), hud:$("hud"), toast:$("toast"), role:$("roleText"), goal:$("objective"), cheese:$("cheeseText"), item:$("itemText"), floor:$("floorText")};
+  const state = {mode:"menu", role:"jerry", elapsed:0, toastTimer:0, last:0, musicOn:true, musicTimer:null, musicStep:0, audio:null};
+  const keys = new Set(), touch = {left:false,right:false,up:false,down:false};
+  const furniture = [
+    {x:176,w:158,h:76,f:0,type:"sofa"},{x:392,w:126,h:55,f:0,type:"table"},{x:760,w:100,h:126,f:0,type:"cabinet"},{x:966,w:108,h:71,f:0,type:"chair"},
+    {x:174,w:185,h:93,f:1,type:"bed"},{x:794,w:111,h:135,f:1,type:"bookcase"},{x:979,w:103,h:65,f:1,type:"desk"}
+  ];
+  const freshItems = () => [
+    {id:"broom",name:"Швабра",x:548,f:0,uses:3,emoji:"🧹",color:"#74b89b"},
+    {id:"pillow",name:"Подушка",x:690,f:1,uses:2,emoji:"🛏️",color:"#e293aa"},
+    {id:"pan",name:"Сковородка",x:916,f:0,uses:2,emoji:"🍳",color:"#9ca7bf"}
+  ];
+  const freshCheese = () => [{x:103,f:1,taken:false},{x:674,f:1,taken:false},{x:704,f:0,taken:false}];
+  let items = freshItems(), cheeses = freshCheese(), tom, jerry, player, enemy, frameId=0;
+
+  function character(role,x,f) { return {role,x,f,facing:1,jump:0,vy:0,stun:0,swing:0,cooldown:0,weapon:null,cheese:0,walking:false,walkT:0,idleSince:0,idleMode:-1,idleT:0,lastIdle:-1,aiClock:0}; }
+  function resetWorld(role) {
+    state.role=role; state.elapsed=0; items=freshItems(); cheeses=freshCheese();
+    tom=character("tom",role==="tom"?120:1010,0); jerry=character("jerry",role==="jerry"?120:1010,0);
+    player=role==="tom"?tom:jerry; enemy=role==="tom"?jerry:tom;
+    els.role.textContent=role==="tom"?"Том":"Джерри";
+    els.goal.textContent=role==="tom"?"Поймай Джерри":"Собери 3 сыра и вернись в норку";
+    els.hud.hidden=false; $("menuBtn").hidden=false;
+    updateHud();
+  }
+  function showToast(text) { els.toast.textContent=text; els.toast.classList.add("show"); state.toastTimer=2; }
+  function updateHud() {
+    els.cheese.textContent=jerry.cheese+" / 3";
+    els.item.textContent=player && player.weapon ? player.weapon.name+" ×"+player.weapon.uses : "нет";
+    els.floor.textContent=player ? (player.f===1?"2":"1") : "1";
+    $("pauseBtn").setAttribute("aria-label",state.mode==="paused"?"Продолжить":"Пауза");
+  }
+  function startGame() {
+    resetWorld(state.role); state.mode="playing"; els.menu.hidden=true; els.pause.hidden=true; els.end.hidden=true;
+    $("touch").style.display=""; startAudio(); showToast(state.role==="tom"?"Поймай Джерри!":"Три сыра — и в норку!");
+  }
+  function backToMenu() {
+    state.mode="menu"; els.end.hidden=true; els.pause.hidden=true; els.hud.hidden=true; $("menuBtn").hidden=true; els.menu.hidden=false; $("touch").style.display="none"; tom=null;jerry=null;player=null;enemy=null;draw();
+  }
+  function togglePause(force) {
+    if(state.mode==="playing") { state.mode="paused"; els.pause.hidden=false; }
+    else if(state.mode==="paused" && force!==true) { state.mode="playing"; els.pause.hidden=true; }
+    updateHud();
+  }
+  function finish(won,reason) {
+    state.mode="ended"; els.end.hidden=false; $("endTitle").textContent=won?"Победа!":"Погоня окончена";
+    $("endKicker").textContent=won?"Вот это ловкость!":"Упс, Том оказался быстрее";
+    $("endText").textContent=reason; $("touch").style.display="none"; playJingle(won); updateHud();
+  }
+  function playAgain() { els.end.hidden=true; startGame(); }
+
+  function initAudio() {
+    if(!state.audio) { const A=window.AudioContext||window.webkitAudioContext; if(A) state.audio=new A(); }
+    if(state.audio && state.audio.state==="suspended") state.audio.resume();
+  }
+  function tone(freq,dur,type,vol,when,slide) {
+    if(!state.musicOn || !state.audio) return;
+    const ac=state.audio, osc=ac.createOscillator(), gain=ac.createGain(), t=when||ac.currentTime;
+    osc.type=type||"triangle"; osc.frequency.setValueAtTime(freq,t);
+    if(slide) osc.frequency.exponentialRampToValueAtTime(Math.max(40,freq*slide),t+dur);
+    gain.gain.setValueAtTime(0.0001,t); gain.gain.exponentialRampToValueAtTime(vol||0.055,t+0.025); gain.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    osc.connect(gain); gain.connect(ac.destination); osc.start(t); osc.stop(t+dur+0.03);
+  }
+  function startAudio() { initAudio(); if(state.musicOn && state.audio && !state.musicTimer) musicTick(); }
+  function musicTick() {
+    if(!state.musicOn || !state.audio || state.mode==="menu" || state.mode==="ended") { state.musicTimer=null; return; }
+    const melody=[659,784,988,784,698,880,1047,880,587,740,880,740,523,659,784,659], bass=[165,165,196,147];
+    const ac=state.audio, t=ac.currentTime, n=state.musicStep++;
+    tone(melody[n%melody.length],.2,"triangle",.035,t,.94);
+    if(n%4===0) tone(bass[Math.floor(n/4)%bass.length],.46,"sine",.042,t,.92);
+    if(n%2===0) tone(melody[(n+4)%melody.length]/2,.14,"sine",.018,t+.17,.96);
+    state.musicTimer=window.setTimeout(musicTick,250);
+  }
+  function sfx(kind) {
+    if(!state.musicOn) return; initAudio(); if(!state.audio) return;
+    const t=state.audio.currentTime;
+    if(kind==="pick") { tone(740,.11,"triangle",.09,t,1.3); tone(1040,.17,"sine",.07,t+.09,1.12); }
+    else if(kind==="swing") { tone(320,.18,"sawtooth",.05,t,.28); }
+    else if(kind==="hit") { tone(190,.18,"square",.06,t,.52); tone(620,.23,"triangle",.05,t+.05,.5); }
+    else if(kind==="cheese") { tone(880,.11,"triangle",.075,t,1.2); tone(1175,.19,"triangle",.06,t+.11,1.1); }
+    else if(kind==="jump") { tone(280,.18,"sine",.045,t,1.8); }
+  }
+  function playJingle(win) { if(!state.musicOn) return; initAudio(); if(!state.audio)return; const seq=win?[784,988,1175,1568]:[494,440,392,330],base=state.audio.currentTime; seq.forEach((n,i)=>tone(n,.27,"triangle",.075,base+i*.14,.96)); }
+  $("soundBtn").addEventListener("click", () => {
+    state.musicOn=!state.musicOn; $("soundBtn").textContent=state.musicOn?"♫ Звук: вкл.":"♫ Звук: выкл.";
+    $("soundBtn").setAttribute("aria-pressed",String(state.musicOn));
+    if(!state.musicOn && state.musicTimer) { clearTimeout(state.musicTimer); state.musicTimer=null; }
+    if(state.musicOn && state.mode==="playing") startAudio();
+  });
+
+  function moveFloor(c,direction) {
+    if(Math.abs(c.x-STAIR_X)>98) { if(c===player) showToast("Найди лестницу в центре дома ↑"); return false; }
+    c.f=direction>0?1:0; c.x=STAIR_X; c.jump=0; c.vy=0;
+    if(c===player) { sfx("pick"); showToast(c.f===1?"Ты на втором этаже":"Ты на первом этаже"); }
+    return true;
+  }
+  function blocked(x,f,jump,fromX) {
+    if(jump>48) return false;
+    return furniture.some(o=>o.f===f && x>o.x-24 && x<o.x+o.w+24 && (fromX<o.x-24 || fromX>o.x+o.w+24));
+  }
+  function stepChar(c,dir,dt) {
+    c.walking=!!dir && c.stun<=0;
+    if(c.stun>0) { c.stun=Math.max(0,c.stun-dt); c.walking=false; }
+    if(c.cooldown>0) c.cooldown=Math.max(0,c.cooldown-dt);
+    if(c.swing>0) c.swing=Math.max(0,c.swing-dt);
+    if(c.walking) {
+      c.facing=dir; c.walkT+=dt*11; const nx=Math.max(28,Math.min(W-28,c.x+dir*230*dt));
+      if(!blocked(nx,c.f,c.jump,c.x)) c.x=nx;
+    }
+    if(c.vy!==0 || c.jump>0) {
+      c.vy-=1150*dt; c.jump+=c.vy*dt;
+      if(c.jump<0) { c.jump=0; c.vy=0; }
+    }
+    updateIdle(c,dt,c.walking || c.jump>0);
+  }
+  function updateIdle(c,dt,moving) {
+    if(moving || c.stun>0) { c.idleSince=0; c.idleMode=-1; c.idleT=0; return; }
+    c.idleSince+=dt;
+    if(c.idleSince<5) return;
+    if(c.idleMode<0) { let n=Math.floor(Math.random()*3); if(n===c.lastIdle) n=(n+1+Math.floor(Math.random()*2))%3; c.idleMode=n; c.lastIdle=n; c.idleT=0; }
+    c.idleT+=dt;
+    if(c.idleT>2.15) { c.idleMode=-1; c.idleSince=0; c.idleT=0; }
+  }
+  function playerMove(dt) {
+    if(player.stun>0) { stepChar(player,0,dt); return; }
+    let d=(keys.has("ArrowRight")||keys.has("KeyD")||touch.right?1:0)-(keys.has("ArrowLeft")||keys.has("KeyA")||touch.left?1:0);
+    stepChar(player,d,dt);
+  }
+  function nearestItem(c) {
+    let best=null, dist=Infinity;
+    items.forEach(i=>{if(i.owner) return; const d=Math.abs(i.x-c.x)+(i.f===c.f?0:300); if(d<dist){dist=d;best=i;}});
+    return best;
+  }
+  function aiMoveTo(c,x,f,dt) {
+    if(c.f!==f) {
+      if(Math.abs(c.x-STAIR_X)<75) { c.f=f; c.x=STAIR_X; return 0; }
+      return c.x<STAIR_X?1:-1;
+    }
+    if(Math.abs(c.x-x)<24) return 0;
+    return c.x<x?1:-1;
+  }
+  function stepEnemy(c,dir,dt) {
+    if(dir && c.stun<=0 && c.jump===0 && c.vy===0 && blocked(c.x+dir*28,c.f,0,c.x)) c.vy=480;
+    stepChar(c,dir,dt);
+  }
+  function aiTick(dt) {
+    enemy.aiClock-=dt;
+    if(enemy.aiClock>0) { stepEnemy(enemy,enemy.aiDir||0,dt); return; }
+    enemy.aiClock=.12;
+    const d=Math.abs(tom.x-jerry.x), same=tom.f===jerry.f;
+    if(enemy.role==="tom") {
+      let targetX=jerry.x, targetF=jerry.f;
+      const obj=nearestItem(tom);
+      if(!tom.weapon && obj && obj.f===tom.f && Math.abs(obj.x-tom.x)<48 && d>80) takeItem(tom,obj);
+      if(d<78 && same && tom.stun<=0 && tom.cooldown<=0) {
+        tom.cooldown=1.65; tom.swing=.42; sfx("swing");
+        if(jerry.stun<=0) { jerry.stun=1.15; sfx("hit"); if(jerry===player) showToast("Том оглушил тебя!"); }
+      } else if(!tom.weapon && obj && d<230 && obj.f===tom.f) targetX=obj.x;
+      enemy.aiDir=d<78 && same?0:aiMoveTo(tom,targetX,targetF,dt);
+    } else {
+      let target;
+      if(jerry.cheese>=3) target={x:1124,f:0};
+      else {
+        const left=cheeses.filter(ch=>!ch.taken);
+        target=left.reduce((a,b)=>!a || Math.abs(b.x-jerry.x)+(b.f===jerry.f?0:330)<Math.abs(a.x-jerry.x)+(a.f===jerry.f?0:330)?b:a,null);
+      }
+      if(same && d<155) target={x:Math.max(55,Math.min(W-45,jerry.x+(jerry.x<tom.x?-190:190))),f:jerry.f};
+      const obj=nearestItem(jerry);
+      if(!jerry.weapon && obj && obj.f===jerry.f && Math.abs(obj.x-jerry.x)<42 && d>100) takeItem(jerry,obj);
+      if(d<72 && same && jerry.weapon && jerry.cooldown<=0) aiAttack(jerry,tom);
+      let dir=target?aiMoveTo(jerry,target.x,target.f,dt):0;
+      if(same && d<155 && target && target.f===jerry.f) dir=jerry.x<tom.x?-1:1;
+      enemy.aiDir=dir;
+    }
+    stepEnemy(enemy,enemy.aiDir||0,dt);
+  }
+  function takeItem(c,item) {
+    if(!item || item.owner) return;
+    item.owner=c; c.weapon=item; sfx("pick"); if(c===player) showToast(item.name+" подобрана — пробел для удара");
+  }
+  function interact() {
+    if(state.mode!=="playing" || player.stun>0) return;
+    if(player.weapon) {
+      const i=player.weapon; i.owner=null; i.x=Math.max(30,Math.min(W-30,player.x+player.facing*36)); i.f=player.f; player.weapon=null; sfx("pick"); showToast("Предмет оставлен на полу");
+      updateHud(); return;
+    }
+    const i=items.filter(o=>!o.owner && o.f===player.f && Math.abs(o.x-player.x)<62).sort((a,b)=>Math.abs(a.x-player.x)-Math.abs(b.x-player.x))[0];
+    if(i) takeItem(player,i); else showToast("Подойди ближе к швабре, подушке или сковородке");
+    updateHud();
+  }
+  function attack(c,target) {
+    if(state.mode!=="playing" || c.stun>0 || c.cooldown>0) return;
+    if(!c.weapon) { c.vy=480; c.cooldown=.42; sfx("jump"); if(c===player) showToast("Прыжок! Найди предмет и нажми пробел ещё раз"); return; }
+    c.cooldown=1.1; c.swing=.38; sfx("swing");
+    const range=c.weapon.id==="broom"?145:112;
+    if(target.f===c.f && Math.abs(target.x-c.x)<range && target.stun<=0) {
+      target.stun=c.weapon.id==="pan"?2.4:1.9; sfx("hit"); showToast(c===player?"Попадание! Противник оглушён":"Ой! Тебя оглушили");
+      c.weapon.uses-=1;
+      if(c.weapon.uses<=0) { const i=c.weapon; items=items.filter(o=>o!==i); c.weapon=null; if(c===player) showToast("Предмет сломался — найди новый"); }
+    } else if(c===player) showToast("Мимо! Подойди ближе");
+    updateHud();
+  }
+  function aiAttack(c,target) {
+    c.cooldown=1.6; c.swing=.35; sfx("swing");
+    if(target.f===c.f && Math.abs(target.x-c.x)<95 && target.stun<=0) { target.stun=1.1; sfx("hit"); if(target===player) showToast("Противник оглушил тебя!"); }
+  }
+  function collectCheese() {
+    cheeses.forEach(ch=>{ if(!ch.taken && jerry.f===ch.f && Math.abs(jerry.x-ch.x)<34 && jerry.jump<45) { ch.taken=true; jerry.cheese++; sfx("cheese"); if(jerry===player) showToast("Сыр найден! "+jerry.cheese+" из 3"); else showToast("Джерри нашёл сыр: "+jerry.cheese+" из 3"); updateHud(); } });
+  }
+  function update(dt) {
+    if(state.mode!=="playing") return;
+    state.elapsed+=dt; playerMove(dt); aiTick(dt); collectCheese();
+    if(jerry.cheese>=3 && jerry.f===0 && Math.abs(jerry.x-1124)<52 && jerry.jump<30) finish(jerry===player,jerry===player?"Три сыра доставлены в норку! Джерри снова всех перехитрил.":"Джерри унёс три сыра в свою норку.");
+    if(state.mode==="playing" && tom.f===jerry.f && Math.abs(tom.x-jerry.x)<43 && tom.stun<=0 && jerry.stun<=0) finish(tom===player,tom===player?"Том поймал Джерри! Погоня выиграна.":"Том поймал Джерри — сыры пока подождут.");
+    if(state.toastTimer>0) { state.toastTimer-=dt; if(state.toastTimer<=0) els.toast.classList.remove("show"); }
+    updateHud();
+  }
+
+  function rr(x,y,w,h,r,fill,stroke) { ctx.beginPath(); ctx.roundRect(x,y,w,h,r); if(fill){ctx.fillStyle=fill;ctx.fill();} if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=3;ctx.stroke();} }
+  function ellipse(x,y,rx,ry,color) { ctx.beginPath(); ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2); ctx.fillStyle=color; ctx.fill(); }
+  function line(x1,y1,x2,y2,color,width) { ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.strokeStyle=color; ctx.lineWidth=width; ctx.lineCap="round"; ctx.stroke(); }
+  function drawWindow(x,y) {
+    rr(x,y,142,105,12,"#bfe6ec","#744f4a"); ctx.fillStyle="#9bd4e1"; ctx.fillRect(x+9,y+9,124,87);
+    ctx.fillStyle="#ffdb8c"; ctx.beginPath(); ctx.arc(x+101,y+29,15,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#9abf9e"; ctx.beginPath(); ctx.moveTo(x+10,y+84);ctx.lineTo(x+51,y+45);ctx.lineTo(x+78,y+79);ctx.lineTo(x+109,y+51);ctx.lineTo(x+134,y+88);ctx.closePath();ctx.fill();
+    line(x+71,y+8,x+71,y+96,"#744f4a",5); line(x+8,y+52,x+134,y+52,"#744f4a",5);
+  }
+  function drawHouse() {
+    const wall=ctx.createLinearGradient(0,0,0,616); wall.addColorStop(0,"#f1dbaf");wall.addColorStop(1,"#e6c994");ctx.fillStyle=wall;ctx.fillRect(0,0,W,616);
+    for(let x=0;x<W;x+=44) { ctx.fillStyle=x%88===0?"#d6b77c22":"#fff2cf22";ctx.fillRect(x,0,5,616); }
+    for(let y=52;y<600;y+=44) for(let x=22;x<W;x+=88) { ellipse(x,y,2,2,"#ba986655"); }
+    drawWindow(65,83); drawWindow(945,77); drawWindow(68,370);
+    rr(747,75,115,75,8,"#df9b5f","#7b554c"); ellipse(804,112,24,24,"#f8d886"); line(804,89,804,135,"#7b554c",4);
+    ctx.fillStyle="#b58455";ctx.fillRect(0,326,W,18);ctx.fillStyle="#8a6349";ctx.fillRect(0,339,W,8);
+    ctx.fillStyle="#bb8c5e";ctx.fillRect(0,601,W,24);ctx.fillStyle="#8a6046";ctx.fillRect(0,616,W,84);
+    for(let x=0;x<W;x+=120){line(x,625,x,700,"#936849",3);line(x+8,653,x+63,653,"#a57853",2);}
+    for(let x=0;x<W;x+=82){line(x,345,x,600,"#d1a36f",2);}
+    for(let y=362;y<598;y+=47)line(0,y,W,y,"#cc9e68",2);
+    // staircase between floors
+    ctx.fillStyle="#a46c47";ctx.beginPath();ctx.moveTo(445,602);ctx.lineTo(643,342);ctx.lineTo(713,342);ctx.lineTo(514,602);ctx.closePath();ctx.fill();ctx.strokeStyle="#704835";ctx.lineWidth=4;ctx.stroke();
+    for(let i=0;i<10;i++){const x=459+i*19.5,y=590-i*26;line(x,y,x+75,y,"#e4b579",7);line(x,y+5,x+75,y+5,"#80543d",2);}
+    // mouse hole
+    ellipse(1122,609,34,12,"#624b49");ellipse(1122,612,24,8,"#171b29");ctx.fillStyle="#fff1d1";ctx.font="bold 13px system-ui";ctx.fillText("НОРКА",1087,583);
+    // room accents
+    ctx.fillStyle="#fff0cc";ctx.fillRect(0,317,W,8);ctx.fillRect(0,592,W,8);
+    ctx.fillStyle="#bc8e5f";ctx.fillRect(860,363,7,215);ctx.fillRect(855,365,170,7);ctx.fillRect(858,576,168,6);
+    for(let i=0;i<5;i++){rr(872+i*28,392,18,30,4,["#f3cb78","#82bca1","#df886c","#849cd2","#d58bb0"][i],null);}
+  }
+  function drawFurniture() {
+    furniture.forEach(o=>{const y=FLOOR[o.f];
+      if(o.type==="sofa") {rr(o.x,y-67,o.w,56,19,"#d56f55","#754c4b");rr(o.x-6,y-43,o.w+12,37,12,"#e48b69","#754c4b");rr(o.x+10,y-70,55,36,11,"#efaa7b",null);rr(o.x+88,y-70,55,36,11,"#efaa7b",null);line(o.x+18,y-10,o.x+10,y+1,"#684849",9);line(o.x+o.w-18,y-10,o.x+o.w-10,y+1,"#684849",9);}
+      if(o.type==="table") {rr(o.x,y-48,o.w,15,7,"#d89a58","#704b3d");line(o.x+14,y-32,o.x+10,y+1,"#704b3d",9);line(o.x+o.w-14,y-32,o.x+o.w-10,y+1,"#704b3d",9);}
+      if(o.type==="cabinet") {rr(o.x,y-o.h,o.w,o.h-8,10,"#8d644f","#654739");line(o.x+o.w/2,y-o.h+8,o.x+o.w/2,y-13,"#d6ad77",4);ellipse(o.x+o.w/2-13,y-71,3,3,"#ffdb8c");ellipse(o.x+o.w/2+13,y-71,3,3,"#ffdb8c");}
+      if(o.type==="chair") {rr(o.x+14,y-76,o.w-28,47,15,"#6a91ae","#465c76");rr(o.x,y-36,o.w,30,13,"#7ca9c1","#465c76");line(o.x+18,y-6,o.x+12,y+2,"#465c76",8);line(o.x+o.w-18,y-6,o.x+o.w-12,y+2,"#465c76",8);}
+      if(o.type==="bed") {rr(o.x,y-57,o.w,52,12,"#668cb4","#465c76");rr(o.x+9,y-76,o.w-18,27,10,"#fbefd2","#8595a8");rr(o.x+12,y-89,56,22,8,"#efb5a4",null);line(o.x+13,y-4,o.x+8,y+2,"#465c76",9);line(o.x+o.w-13,y-4,o.x+o.w-8,y+2,"#465c76",9);}
+      if(o.type==="bookcase") {rr(o.x,y-o.h,o.w,o.h,8,"#916249","#654739");for(let k=0;k<3;k++){line(o.x+8,y-o.h+42+k*40,o.x+o.w-8,y-o.h+42+k*40,"#e5b67c",4);for(let j=0;j<4;j++)rr(o.x+12+j*22,y-o.h+10+k*40,15,28,2,["#e38a69","#87a6cf","#e2c366","#83b99b"][(j+k)%4],null);}}
+      if(o.type==="desk") {rr(o.x,y-50,o.w,14,6,"#d89a58","#704b3d");rr(o.x+8,y-91,o.w-16,40,6,"#d4b184","#704b3d");line(o.x+12,y-34,o.x+10,y+2,"#704b3d",8);line(o.x+o.w-12,y-34,o.x+o.w-10,y+2,"#704b3d",8);}
     });
-  </script>
+  }
+  function drawCheese(ch) {
+    const y=FLOOR[ch.f]-7;ctx.save();ctx.translate(ch.x,y);
+    ctx.fillStyle="#ffd166";ctx.strokeStyle="#a86a38";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-18,0);ctx.lineTo(19,-3);ctx.lineTo(-4,-28);ctx.closePath();ctx.fill();ctx.stroke();
+    ellipse(-3,-12,3.5,3.5,"#d89539");ellipse(6,-5,2.5,2.5,"#d89539");ellipse(-9,-3,2,2,"#d89539");ctx.restore();
+  }
+  function drawItem(i) {
+    if(i.owner) return; const y=FLOOR[i.f]-12;ctx.save();ctx.translate(i.x,y);
+    if(i.id==="broom"){line(-19,11,10,-22,"#a67049",7);line(-19,10,-29,18,"#6baa8b",9);line(-19,10,-6,20,"#83c7a4",5);}
+    if(i.id==="pillow"){ctx.save();ctx.rotate(-.12);rr(-22,-13,44,27,10,"#e293aa","#8b5266");line(-10,-9,10,9,"#ffd9df",2);ctx.restore();}
+    if(i.id==="pan"){line(-5,-2,16,9,"#6b7184",8);ellipse(-11,-8,19,14,"#56627d");ellipse(-11,-10,13,9,"#bac8d0");}
+    ctx.fillStyle="#fff1d1";ctx.font="bold 13px system-ui";ctx.textAlign="center";ctx.fillText(i.name,0,34);ctx.restore();
+  }
+  function drawCharacter(c) {
+    if(!c) return;
+    const x=c.x, y=FLOOR[c.f]-c.jump, t=state.elapsed;
+    const walk=c.walking?Math.sin(c.walkT)*4:0, idle=c.idleMode, it=c.idleT;
+    const stretch=idle===2?1+Math.sin(Math.min(1,it/2.15)*Math.PI)*.09:1;
+    const blink=idle===0 && it>.45 && it<.68;
+    const look=idle===1?Math.sin(it*3)*3:0;
+    ctx.save();ctx.translate(x,y);ctx.scale(c.facing||1,1);
+    ellipse(0,2,23,5,"#3b35414a");
+    // tail swishes separately, so every frame remains smooth.
+    ctx.beginPath();ctx.moveTo(-12,-26);ctx.bezierCurveTo(-39,-32+Math.sin(t*5+(c.role==="jerry"?1:0))*9,-42,-4, -29,-11+Math.sin(t*4)*5);ctx.strokeStyle=c.role==="tom"?"#67728b":"#b87948";ctx.lineWidth=c.role==="tom"?9:5;ctx.lineCap="round";ctx.stroke();
+    ctx.save();ctx.translate(0,0);ctx.scale(1,stretch);
+    if(c.role==="tom") {
+      ctx.strokeStyle="#505a70";ctx.lineWidth=5;line(-10,-13+walk, -12,0,"#505a70",6);line(10,-13-walk,12,0,"#505a70",6);ellipse(-13,0,9,4,"#8c95a9");ellipse(13,0,9,4,"#8c95a9");
+      ellipse(0,-35,22,29,"#7c879e");ellipse(0,-66,31,30,"#858fa4");
+      ctx.fillStyle="#7c879e";ctx.beginPath();ctx.moveTo(-28,-79);ctx.lineTo(-32,-112);ctx.lineTo(-8,-92);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(8,-92);ctx.lineTo(32,-112);ctx.lineTo(28,-77);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#eea7a0";ctx.beginPath();ctx.moveTo(-25,-91);ctx.lineTo(-28,-105);ctx.lineTo(-16,-94);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(16,-94);ctx.lineTo(28,-105);ctx.lineTo(25,-90);ctx.closePath();ctx.fill();
+      ellipse(-11,-69,8,11,"#fff1d5");ellipse(11,-69,8,11,"#fff1d5");
+      if(!blink){ellipse(-10+look,-68,3,5,"#2f3545");ellipse(12+look,-68,3,5,"#2f3545");} else {line(-18,-69,-4,-69,"#505166",3);line(4,-69,18,-69,"#505166",3);}
+      ellipse(0,-52,18,12,"#eee0ca");ellipse(0,-58,6,4,"#ef8e98");
+      line(-12,-54,-33,-58,"#5d6070",2);line(-12,-50,-34,-48,"#5d6070",2);line(12,-54,33,-58,"#5d6070",2);line(12,-50,34,-48,"#5d6070",2);
+    } else {
+      line(-7,-12+walk,-8,0,"#955c3d",5);line(8,-12-walk,10,0,"#955c3d",5);ellipse(-9,0,7,3.5,"#c18a55");ellipse(11,0,7,3.5,"#c18a55");
+      ellipse(0,-28,15,22,"#b87948");ellipse(0,-53,22,22,"#c88750");
+      ellipse(-20,-72,13,16,"#bb7a48");ellipse(20,-72,13,16,"#bb7a48");ellipse(-20,-72,7,9,"#f0ac9d");ellipse(20,-72,7,9,"#f0ac9d");
+      ellipse(-8,-55,6,8,"#fff0d2");ellipse(8,-55,6,8,"#fff0d2");
+      if(!blink){ellipse(-7+look,-54,2.5,4,"#2e3440");ellipse(9+look,-54,2.5,4,"#2e3440");} else {line(-13,-54,-3,-54,"#483d43",2);line(3,-54,13,-54,"#483d43",2);}
+      ellipse(0,-40,14,9,"#edc49b");ellipse(0,-45,4,3,"#594342");line(-12,-41,-24,-44,"#81573f",1.5);line(12,-41,24,-44,"#81573f",1.5);
+    }
+    ctx.restore();
+    if(c.weapon && c.swing>0){ctx.save();ctx.rotate(-.4-c.swing*1.5);if(c.weapon.id==="broom"){line(16,-45,60,-84,"#a67049",7);line(56,-88,69,-78,"#6baa8b",9);}else if(c.weapon.id==="pan"){line(18,-40,46,-48,"#6b7184",7);ellipse(53,-50,14,10,"#9ca7bf");}else{rr(28,-57,35,23,8,"#e293aa","#8b5266");}ctx.restore();}
+    if(c.stun>0){ctx.fillStyle="#ffd166";ctx.font="bold 21px system-ui";ctx.textAlign="center";ctx.fillText("✦  ✦",0,-126+Math.sin(t*12)*3);}
+    if(c===player){ctx.strokeStyle="#fff5c2";ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.beginPath();ctx.ellipse(0,-46,31,67,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
+    ctx.restore();
+  }
+  function draw() {
+    ctx.clearRect(0,0,W,H);drawHouse();drawFurniture();cheeses.forEach(ch=>{if(!ch.taken)drawCheese(ch);});items.forEach(drawItem);
+    // Tiny dust motes make the rooms feel alive.
+    for(let i=0;i<8;i++){const x=(i*167+state.elapsed*5)%W,y=70+(i*71)%530+Math.sin(state.elapsed+i)*4;ellipse(x,y,1.5,1.5,"#fff7d966");}
+    drawCharacter(enemy);drawCharacter(player);
+    // floor labels and a little arrow over the stair landing
+    ctx.fillStyle="#684f47";ctx.font="bold 12px system-ui";ctx.textAlign="left";ctx.fillText("ВТОРОЙ ЭТАЖ",28,360);ctx.fillText("ПЕРВЫЙ ЭТАЖ",28,632);
+    ctx.fillStyle="#fff2c9";ctx.font="bold 15px system-ui";ctx.textAlign="center";ctx.fillText("ЛЕСТНИЦА",568,493);
+  }
+  function loop(now) {
+    const dt=Math.min(.034,(now-(state.last||now))/1000);state.last=now;
+    update(dt);draw();frameId=requestAnimationFrame(loop);
+  }
+
+  document.querySelectorAll(".role-card").forEach(btn=>btn.addEventListener("click",()=>{
+    state.role=btn.dataset.role;
+    document.querySelectorAll(".role-card").forEach(b=>{const on=b===btn;b.classList.toggle("selected",on);b.setAttribute("aria-pressed",String(on));});
+    $("startBtn").innerHTML="Начать за "+(state.role==="tom"?"Тома":"Джерри")+" <span aria-hidden=\"true\">→</span>";
+  }));
+  $("startBtn").addEventListener("click",startGame);
+  $("pauseBtn").addEventListener("click",()=>togglePause());
+  $("resumeBtn").addEventListener("click",()=>togglePause());
+  $("restartBtn").addEventListener("click",startGame);
+  $("againBtn").addEventListener("click",playAgain);
+  $("endMenuBtn").addEventListener("click",backToMenu);
+  $("menuBtn").addEventListener("click",backToMenu);
+  window.addEventListener("keydown",e=>{
+    const code=e.code;
+    if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Space"].includes(code))e.preventDefault();
+    if(e.repeat)return;
+    if(code==="KeyP"){if(state.mode==="playing"||state.mode==="paused")togglePause();return;}
+    if(state.mode!=="playing")return;
+    if(code==="KeyE"||code==="KeyF"){interact();return;}
+    if(code==="Space"){attack(player,enemy);return;}
+    if(code==="ArrowUp"||code==="KeyW"||code==="ArrowDown"||code==="KeyS"){
+      if(Math.abs(player.x-STAIR_X)<100)moveFloor(player,(code==="ArrowUp"||code==="KeyW")?1:-1);
+      else showToast("Лестница находится в центре каждого этажа");
+      return;
+    }
+    keys.add(code);
+  });
+  window.addEventListener("keyup",e=>keys.delete(e.code));
+  window.addEventListener("blur",()=>keys.clear());
+  document.querySelectorAll("[data-hold]").forEach(btn=>{
+    const key=btn.dataset.hold;
+    const down=e=>{e.preventDefault();touch[key]=true;if((key==="up"||key==="down")&&state.mode==="playing")moveFloor(player,key==="up"?1:-1);};
+    const up=e=>{e.preventDefault();touch[key]=false;};
+    btn.addEventListener("pointerdown",down);btn.addEventListener("pointerup",up);btn.addEventListener("pointercancel",up);btn.addEventListener("pointerleave",up);
+  });
+  document.querySelectorAll("[data-action]").forEach(btn=>btn.addEventListener("pointerdown",e=>{e.preventDefault();if(btn.dataset.action==="interact")interact();else attack(player,enemy);}));
+  // Keep movement keys released if focus leaves the page.
+  els.menu.addEventListener("click",e=>{if(e.target===els.menu) return;});
+  draw();frameId=requestAnimationFrame(loop);
+})();
+</script>
 </body>
 </html>
