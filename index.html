@@ -64,11 +64,13 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:n
             <div class="item-card"><span>🧹</span><strong>Швабра</strong><small>3 широких взмаха, свистящий удар и оглушение рядом.</small></div>
             <div class="item-card"><span>🛏️</span><strong>Подушка</strong><small>2 дальних броска с мягким хлопком; после броска подберите снова.</small></div>
             <div class="item-card"><span>🍳</span><strong>Сковородка</strong><small>2 коротких удара с металлическим звоном и долгим оглушением.</small></div>
+            <div class="item-card"><span>🔴</span><strong>Мячик</strong><small>2 прыгучих броска средней дальности с пружинным «бум!».</small></div>
+            <div class="item-card"><span>🍌</span><strong>Банановая кожура</strong><small>Поставь ловушку; соперник поскользнётся и замрёт.</small></div>
           </div>
         </section>
-        <div class="menu-bottom"><button id="startBtn" class="primary" type="button">Начать за Джерри <span aria-hidden="true">→</span></button><span class="menu-note">Музыка включается после старта. Можно выключить вверху.</span><span class="mobile-keys">← → ходить · ↑ ↓ у лестницы — подниматься/спускаться · пробел — прыжок/удар · E — предмет · P — пауза</span></div>
+        <div class="menu-bottom"><button id="startBtn" class="primary" type="button">Начать за Джерри <span aria-hidden="true">→</span></button><span class="menu-note">Новая мультяшная тема и звуковые эффекты включаются после старта.</span><span class="mobile-keys">← → ходить · ↑ ↓ у лестницы · пробел — прыжок · E — взять / применить · Q — выбросить · P — пауза</span></div>
         <div class="controls" aria-label="Управление">
-          <span class="key"><b>← →</b> ходить</span><span class="key"><b>↑ ↓</b> лестница</span><span class="key"><b>Пробел</b> прыгать / ударить</span><span class="key"><b>E</b> взять / бросить предмет</span><span class="key"><b>P</b> пауза</span>
+          <span class="key"><b>← →</b> ходить</span><span class="key"><b>↑ ↓</b> лестница</span><span class="key"><b>Пробел</b> прыгнуть</span><span class="key"><b>E</b> взять / применить предмет</span><span class="key"><b>Q</b> выбросить</span><span class="key"><b>P</b> пауза</span>
         </div>
       </div>
     </div>
@@ -81,11 +83,11 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1200/700;touch-action:n
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <div id="touch" class="touch" aria-label="Сенсорное управление">
       <div class="touch-group"><button data-hold="left" aria-label="Влево">←</button><button data-hold="right" aria-label="Вправо">→</button><button data-hold="up" aria-label="На второй этаж">↟</button><button data-hold="down" aria-label="На первый этаж">↡</button></div>
-      <div class="touch-group"><button class="action" data-action="interact" aria-label="Взять предмет">E</button><button class="action" data-action="attack" aria-label="Прыжок или удар">✦</button></div>
+      <div class="touch-group"><button class="action" data-action="interact" aria-label="Взять или применить предмет">E</button><button class="action" data-action="drop" aria-label="Выбросить предмет">Q</button><button class="action" data-action="attack" aria-label="Прыжок">↟</button></div>
     </div>
   </section>
-  <footer class="below"><span><strong>Подсказка:</strong> десять комнат на двух этажах; предметы и стартовые точки меняются каждый раунд.</span><span class="howto"><span class="key"><b>↑ / ↓</b> у лестницы — сменить этаж</span><span class="key"><b>E</b> подобрать</span></span></footer>
+  <footer class="below"><span><strong>Подсказка:</strong> десять комнат на двух этажах; предметы и стартовые точки меняются каждый раунд.</span><span class="howto"><span class="key"><b>↑ / ↓</b> у лестницы — сменить этаж</span><span class="key"><b>E</b> взять / применить</span><span class="key"><b>Q</b> выбросить</span></span></footer>
 </main>
-<script src="./game.js?v=remove-ring-mask-v2"></script>
+<script src="./game.js?v=controls-items-music-v3"></script>
 </body>
 </html>
