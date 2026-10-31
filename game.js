@@ -98,52 +98,69 @@
           const x1 = Math.min(img.width, Math.round((col + 1) * SPRITE_CELL_W));
           const y1 = Math.min(img.height, Math.round((row + 1) * SPRITE_CELL_H));
           const width = x1 - x0, height = y1 - y0, length = width * height, threshold = 160;
-          const visited = new Uint8Array(length), stack = new Int32Array(length);
-          let best = null;
+          const labels = new Uint16Array(length), stack = new Int32Array(length), seen = 0xffff;
+          let best = null, componentId = 0;
           for (let seed = 0; seed < length; seed += 1) {
-            if (visited[seed]) continue;
+            if (labels[seed] !== 0) continue;
             const seedX = seed % width, seedY = Math.floor(seed / width);
             const seedAlpha = data[((y0 + seedY) * img.width + x0 + seedX) * 4 + 3];
-            if (seedAlpha <= threshold) { visited[seed] = 1; continue; }
+            if (seedAlpha <= threshold) { labels[seed] = seen; continue; }
             let head = 0, tail = 0, count = 0;
+            componentId += 1;
             let minX = seedX, maxX = seedX, minY = seedY, maxY = seedY;
-            visited[seed] = 1; stack[tail++] = seed;
+            labels[seed] = componentId; stack[tail++] = seed;
             while (head < tail) {
               const index = stack[head++], px = index % width, py = Math.floor(index / width);
               count += 1; minX = Math.min(minX, px); maxX = Math.max(maxX, px);
               minY = Math.min(minY, py); maxY = Math.max(maxY, py);
               let next = px > 0 ? index - 1 : -1;
-              if (next >= 0 && !visited[next]) {
-                visited[next] = 1;
-                if (data[((y0 + py) * img.width + x0 + px - 1) * 4 + 3] > threshold) stack[tail++] = next;
+              if (next >= 0 && labels[next] === 0) {
+                if (data[((y0 + py) * img.width + x0 + px - 1) * 4 + 3] > threshold) { labels[next] = componentId; stack[tail++] = next; }
+                else labels[next] = seen;
               }
               next = px + 1 < width ? index + 1 : -1;
-              if (next >= 0 && !visited[next]) {
-                visited[next] = 1;
-                if (data[((y0 + py) * img.width + x0 + px + 1) * 4 + 3] > threshold) stack[tail++] = next;
+              if (next >= 0 && labels[next] === 0) {
+                if (data[((y0 + py) * img.width + x0 + px + 1) * 4 + 3] > threshold) { labels[next] = componentId; stack[tail++] = next; }
+                else labels[next] = seen;
               }
               next = py > 0 ? index - width : -1;
-              if (next >= 0 && !visited[next]) {
-                visited[next] = 1;
-                if (data[((y0 + py - 1) * img.width + x0 + px) * 4 + 3] > threshold) stack[tail++] = next;
+              if (next >= 0 && labels[next] === 0) {
+                if (data[((y0 + py - 1) * img.width + x0 + px) * 4 + 3] > threshold) { labels[next] = componentId; stack[tail++] = next; }
+                else labels[next] = seen;
               }
               next = py + 1 < height ? index + width : -1;
-              if (next >= 0 && !visited[next]) {
-                visited[next] = 1;
-                if (data[((y0 + py + 1) * img.width + x0 + px) * 4 + 3] > threshold) stack[tail++] = next;
+              if (next >= 0 && labels[next] === 0) {
+                if (data[((y0 + py + 1) * img.width + x0 + px) * 4 + 3] > threshold) { labels[next] = componentId; stack[tail++] = next; }
+                else labels[next] = seen;
               }
             }
-            if (!best || count > best.count) best = { count, minX, minY, maxX, maxY };
+            if (!best || count > best.count) best = { id: componentId, count, minX, minY, maxX, maxY };
           }
           if (best) {
-            const pad = 2;
+            const frameData = trimCtx.getImageData(x0, y0, width, height), pixels = frameData.data;
+            for (let i = 0; i < length; i += 1) {
+              if (labels[i] === best.id) continue;
+              const alphaIndex = i * 4 + 3;
+              if (pixels[alphaIndex] > 0 && pixels[alphaIndex] <= threshold) {
+                const px = i % width, py = Math.floor(i / width);
+                let nearMain = false;
+                for (let oy = -1; oy <= 1 && !nearMain; oy += 1) for (let ox = -1; ox <= 1; ox += 1) {
+                  const nx = px + ox, ny = py + oy;
+                  if (nx >= 0 && nx < width && ny >= 0 && ny < height && labels[ny * width + nx] === best.id) { nearMain = true; break; }
+                }
+                if (nearMain) continue;
+              }
+              pixels[alphaIndex] = 0;
+            }
+            trimCtx.putImageData(frameData, x0, y0);
+            const pad = 1;
             const bx = Math.max(0, best.minX - pad), by = Math.max(0, best.minY - pad);
             const ex = Math.min(width, best.maxX + pad + 1), ey = Math.min(height, best.maxY + pad + 1);
             bounds.push({ x: x0 + bx, y: y0 + by, w: ex - bx, h: ey - by });
           } else bounds.push(null);
         }
       }
-      sprites[role] = { img, bounds };
+      sprites[role] = { img: trimCanvas, bounds };
     };
     img.onerror = () => { sprites[role] = null; };
     img.src = src;
@@ -707,7 +724,7 @@
     const frame = c.climb ? Math.floor(c.climbAnim * 1.4) % 4 : c.walking ? Math.floor(c.walkT * .65) % 4 : c.idleMode >= 0 ? Math.floor(c.idleT * 5) % 4 : Math.floor(t * 2.2) % 4;
     ctx.save(); ctx.translate(c.x, baseY); ellipse(0, 2, c.role === "tom" ? 38 : 26, 7, "#3b35414a");
     if (atlas?.bounds[row * 4 + frame]) {
-      const b = atlas.bounds[row * 4 + frame], sh = c.role === "tom" ? 146 : 116;
+      const b = atlas.bounds[row * 4 + frame], sh = shHeight(c);
       const sw = sh * b.w / b.h;
       ctx.save(); ctx.scale(c.facing || 1, 1);
       ctx.drawImage(atlas.img, b.x, b.y, b.w, b.h, -sw / 2, -sh, sw, sh);
@@ -723,13 +740,9 @@
       ctx.restore();
     }
     if (c.stun > 0) { ctx.fillStyle = "#ffd166"; ctx.font = "bold 22px system-ui"; ctx.textAlign = "center"; ctx.fillText("✦  ✦", 0, -shHeight(c) - 16 + Math.sin(t * 12) * 3); }
-    if (c === player) {
-      ctx.strokeStyle = "#fff5c2"; ctx.lineWidth = 2; ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.ellipse(0, -shHeight(c) * .49, c.role === "tom" ? 43 : 34, shHeight(c) * .5, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = "#fff8e9"; ctx.font = "800 12px system-ui"; ctx.textAlign = "center"; ctx.fillText("ТЫ", 0, -shHeight(c) - 21);
-    }
     ctx.restore();
   }
-  function shHeight(c) { return c.role === "tom" ? 146 : 116; }
+  function shHeight(c) { return c.role === "tom" ? 146 : 86; }
   function drawProjectiles() {
     projectiles.forEach(p => {
       ctx.save(); ctx.translate(p.x, floorY(p.f) - 87 - Math.sin(state.elapsed * 20) * 4); ctx.rotate(p.dir * .15);
